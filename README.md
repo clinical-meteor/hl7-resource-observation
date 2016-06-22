@@ -1,13 +1,13 @@
-##clinical:hl7-resource-observation
+##clinical:hl7-resource-diagnostic-report
 
-HL7 FHIR Resource - Observation
+HL7 FHIR Resource - Diagnostic Report
 
 ===============================
 #### Installation  
 
 ````bash
 # to add hl7 resource schemas and rest routes
-meteor add clinical:hl7-resource-observation
+meteor add clinical:hl7-resource-diagnostic-report
 
 # to initialize default data
 INITIALIZE=true meteor
@@ -21,7 +21,7 @@ If you're working with HL7 FHIR Resources, we recommend using [Postman](https://
 ===============================
 #### Conformance Statement  
 
-The resource in this package implements the FHIR Patient Resource schema provided at  [https://www.hl7.org/fhir/observation.html](https://www.hl7.org/fhir/observation.html).  
+The resource in this package implements the FHIR Patient Resource schema provided at  [https://www.hl7.org/fhir/diagnosticreport.html](https://www.hl7.org/fhir/diagnosticreport.html).  
 
 ===============================
 #### Licensing  

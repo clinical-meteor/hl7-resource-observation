@@ -2,8 +2,8 @@
 Meteor.startup(function () {
   if (process.env.INITIALIZE) {
     console.log('INITIALZING');
-    if (Observations.find().count() === 0) {
-    console.log('No Observations found.  Creating some...');
+    if (DiagnosticReports.find().count() === 0) {
+    console.log('No DiagnosticReports found.  Creating some...');
 
 
 
