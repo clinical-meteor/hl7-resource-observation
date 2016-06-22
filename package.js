@@ -1,8 +1,8 @@
 Package.describe({
-  name: 'clinical:hl7-resource-diagnostic-report',
+  name: 'clinical:hl7-resource-observation',
   version: '1.1.0',
   summary: 'HL7 FHIR Resource - Diagnostic Report',
-  git: 'https://github.com/clinical-meteor/hl7-resource-diagnostic-report',
+  git: 'https://github.com/clinical-meteor/hl7-resource-observation',
   documentation: 'README.md'
 });
 
@@ -19,10 +19,11 @@ Package.onUse(function (api) {
   api.use('clinical:base-model@1.3.5');
   api.use('clinical:hl7-resource-datatypes@0.4.4');
 
-  api.addFiles('lib/hl7-resource-diagnostic-report.js', ['client', 'server']);
+  api.addFiles('lib/hl7-resource-observation.js', ['client', 'server']);
   api.addFiles('server/rest.js', 'server');
   api.addFiles('server/initialize.js', 'server');
 
+  api.export('Observation');
   api.export('Observations');
   api.export('ObservationSchema');
 });

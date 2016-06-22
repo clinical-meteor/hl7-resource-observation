@@ -7,8 +7,8 @@ JsonRoutes.Middleware.use(
 
 
 
-JsonRoutes.add("get", "/fhir/DiagnosticReport/:id", function (req, res, next) {
-  process.env.DEBUG && console.log('GET /fhir/DiagnosticReport/' + req.params.id);
+JsonRoutes.add("get", "/fhir/Observation/:id", function (req, res, next) {
+  process.env.DEBUG && console.log('GET /fhir/Observation/' + req.params.id);
 
   res.setHeader("Access-Control-Allow-Origin", "*");
 
@@ -21,18 +21,18 @@ JsonRoutes.add("get", "/fhir/DiagnosticReport/:id", function (req, res, next) {
 
     if (typeof SiteStatistics === "object") {
       SiteStatistics.update({_id: "configuration"}, {$inc:{
-        "DiagnosticReports.count.read": 1
+        "Observations.count.read": 1
       }});
     }
 
     var id = req.params.id;
-    var diagnosticReportData = DiagnosticReports.findOne(id);
-    delete diagnosticReportData._document;
-    process.env.TRACE && console.log('diagnosticReportData', diagnosticReportData);
+    var observationData = Observations.findOne(id);
+    delete observationData._document;
+    process.env.TRACE && console.log('observationData', observationData);
 
     JsonRoutes.sendResult(res, {
       code: 200,
-      data: diagnosticReportData
+      data: observationData
     });
   } else {
     JsonRoutes.sendResult(res, {
@@ -43,8 +43,8 @@ JsonRoutes.add("get", "/fhir/DiagnosticReport/:id", function (req, res, next) {
 
 
 
-JsonRoutes.add("get", "/fhir/DiagnosticReport", function (req, res, next) {
-  process.env.DEBUG && console.log('GET /fhir/DiagnosticReport', req.query);
+JsonRoutes.add("get", "/fhir/Observation", function (req, res, next) {
+  process.env.DEBUG && console.log('GET /fhir/Observation', req.query);
 
   res.setHeader("Access-Control-Allow-Origin", "*");
 
@@ -57,7 +57,7 @@ JsonRoutes.add("get", "/fhir/DiagnosticReport", function (req, res, next) {
 
     if (typeof SiteStatistics === "object") {
       SiteStatistics.update({_id: "configuration"}, {$inc:{
-        "DiagnosticReports.count.search-type": 1
+        "Observations.count.search-type": 1
       }});
     }
 
@@ -97,20 +97,20 @@ JsonRoutes.add("get", "/fhir/DiagnosticReport", function (req, res, next) {
     // }
 
     process.env.DEBUG && console.log('databaseQuery', databaseQuery);
-    process.env.DEBUG && console.log('DiagnosticReports.find(id)', DiagnosticReports.find(databaseQuery).fetch());
+    process.env.DEBUG && console.log('Observations.find(id)', Observations.find(databaseQuery).fetch());
 
     // because we're using BaseModel and a _transform() function
-    // DiagnosticReports returns an object instead of a pure JSON document
+    // Observations returns an object instead of a pure JSON document
     // it stores a shadow reference of the original doc, which we're removing here
-    var diagnosticReportData = DiagnosticReports.find(databaseQuery).fetch();
+    var observationData = Observations.find(databaseQuery).fetch();
 
-    diagnosticReportData.forEach(function(patient){
+    observationData.forEach(function(patient){
       delete patient._document;
     });
 
     JsonRoutes.sendResult(res, {
       code: 200,
-      data: diagnosticReportData
+      data: observationData
     });
   } else {
     JsonRoutes.sendResult(res, {
