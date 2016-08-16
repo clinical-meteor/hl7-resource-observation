@@ -5,7 +5,7 @@ HL7 FHIR Resource - Diagnostic Report
 ===============================
 #### Conformance Statement  
 
-The resource in this package implements the FHIR Patient Resource DTSU2 schema provided at  [https://www.hl7.org/fhir/diagnosticreport.html](https://www.hl7.org/fhir/diagnosticreport.html).  
+The resource in this package implements the FHIR Patient Resource DTSU2 schema provided at  [https://www.hl7.org/fhir/observation.html](https://www.hl7.org/fhir/observation.html).  
 
 ===============================
 #### Installation  
@@ -24,27 +24,22 @@ INITIALIZE=true meteor
 
 ```js
 var newObservation = {
-  "category": { 
-    "coding": {
-      "system" : "",
-      "code": "123.1",
-      "version": "1",
-      "display": "foo",
-      "userSelected": false
+  category: { 
+    coding: {
+      system : "",
+      code: "123.1",
+      version: "1",
+      display: "foo",
+      userSelected: false
     }, 
-    "text": "Foo"
+    text: "Foo"
   },
-  "code": { 
-   "coding": {
-     "system" : "",
-     "code": "333.a",
-     "version": "1",
-     "display": "Bar",
-     "userSelected": false
-   }, 
-   "text": "Bar"
+  valueQuantity: { 
+    value: 123,
+    unit: "kg",
+    system: "http://unitsofmeasure.org"
   },
-  "subject": {
+  subject: {
     display: "...",
     reference:  "Patient/...."
   }
