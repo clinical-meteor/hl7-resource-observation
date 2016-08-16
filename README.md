@@ -28,8 +28,8 @@ The resource in this package implements the FHIR Patient Resource schema provide
 ===============================
 #### Example   
 
-```
-newObservation = {
+```js
+var newObservation = {
   category: { 
     "coding": {
       "system" : "",
