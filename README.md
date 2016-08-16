@@ -1,6 +1,6 @@
-##clinical:hl7-resource-diagnostic-report
+##clinical:hl7-resource-observation
 
-HL7 FHIR Resource - Diagnostic Report
+HL7 FHIR Resource - Observation
 
 ===============================
 #### Conformance Statement  
