@@ -23,6 +23,58 @@ If you're working with HL7 FHIR Resources, we recommend using [Postman](https://
 
 The resource in this package implements the FHIR Patient Resource schema provided at  [https://www.hl7.org/fhir/diagnosticreport.html](https://www.hl7.org/fhir/diagnosticreport.html).  
 
+
+
+===============================
+#### Example   
+
+```
+newObservation = {
+  category: { 
+    "coding": {
+      "system" : "",
+      "code": "123.1",
+      "version": "1",
+      "display": "foo",
+      "userSelected": false
+    }, 
+    "text": "Foo"
+  },
+  code: { 
+   "coding": {
+     "system" : "",
+     "code": "333.a",
+     "version": "1",
+     "display": "Bar",
+     "userSelected": false
+   }, 
+   "text": "Bar"
+  },
+  subject: {
+    display: "...",
+    reference:  "Patient/...."
+  }
+}
+Observations.insert(newObservation);
+```
+
+===============================
+#### Extending the Schema
+
+```
+ExtendedObservationSchema = new SimpleSchema([
+  ObservationSchema,
+  {
+    "createdAt": {
+      type: Date,
+      optional: true
+    }
+  }
+]);
+Observations.attachSchema( ExtendedObservationSchema );
+```
+
+
 ===============================
 #### Licensing  
 
