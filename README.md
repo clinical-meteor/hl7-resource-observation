@@ -3,6 +3,11 @@
 HL7 FHIR Resource - Diagnostic Report
 
 ===============================
+#### Conformance Statement  
+
+The resource in this package implements the FHIR Patient Resource DTSU2 schema provided at  [https://www.hl7.org/fhir/diagnosticreport.html](https://www.hl7.org/fhir/diagnosticreport.html).  
+
+===============================
 #### Installation  
 
 ````bash
@@ -13,24 +18,13 @@ meteor add clinical:hl7-resource-diagnostic-report
 INITIALIZE=true meteor
 ````
 
-===============================
-#### Utilities  
-
-If you're working with HL7 FHIR Resources, we recommend using [Postman](https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop?hl=en).
-
-===============================
-#### Conformance Statement  
-
-The resource in this package implements the FHIR Patient Resource schema provided at  [https://www.hl7.org/fhir/diagnosticreport.html](https://www.hl7.org/fhir/diagnosticreport.html).  
-
-
 
 ===============================
 #### Example   
 
 ```js
 var newObservation = {
-  category: { 
+  "category": { 
     "coding": {
       "system" : "",
       "code": "123.1",
@@ -40,7 +34,7 @@ var newObservation = {
     }, 
     "text": "Foo"
   },
-  code: { 
+  "code": { 
    "coding": {
      "system" : "",
      "code": "333.a",
@@ -50,7 +44,7 @@ var newObservation = {
    }, 
    "text": "Bar"
   },
-  subject: {
+  "subject": {
     display: "...",
     reference:  "Patient/...."
   }
@@ -61,19 +55,23 @@ Observations.insert(newObservation);
 ===============================
 #### Extending the Schema
 
-```
+```js
 ExtendedObservationSchema = new SimpleSchema([
   ObservationSchema,
   {
     "createdAt": {
-      type: Date,
-      optional: true
+      "type": Date,
+      "optional": true
     }
   }
 ]);
 Observations.attachSchema( ExtendedObservationSchema );
 ```
 
+===============================
+#### Utilities  
+
+If you're working with HL7 FHIR Resources, we recommend using [Postman](https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop?hl=en).
 
 ===============================
 #### Licensing  
