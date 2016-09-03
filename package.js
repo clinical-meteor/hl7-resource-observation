@@ -1,7 +1,7 @@
 Package.describe({
   name: 'clinical:hl7-resource-observation',
-  version: '1.2.0',
-  summary: 'HL7 FHIR Resource - Diagnostic Report',
+  version: '1.2.1',
+  summary: 'HL7 FHIR Resource - Observation',
   git: 'https://github.com/clinical-meteor/hl7-resource-observation',
   documentation: 'README.md'
 });
