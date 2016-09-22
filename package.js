@@ -17,7 +17,7 @@ Package.onUse(function (api) {
   api.use('prime8consulting:meteor-oauth2-server@0.0.2');
 
   api.use('clinical:base-model@1.3.5');
-  api.use('clinical:hl7-resource-datatypes@0.4.4');
+  api.use('clinical:hl7-resource-datatypes@0.4.6');
 
   api.addFiles('lib/hl7-resource-observation.js', ['client', 'server']);
   api.addFiles('server/rest.js', 'server');
