@@ -1,6 +1,6 @@
 Package.describe({
   name: 'clinical:hl7-resource-observation',
-  version: '1.2.5',
+  version: '1.2.6',
   summary: 'HL7 FHIR Resource - Observation',
   git: 'https://github.com/clinical-meteor/hl7-resource-observation',
   documentation: 'README.md'
@@ -12,12 +12,12 @@ Package.onUse(function (api) {
   api.use('meteor-platform');
   api.use('mongo');
   api.use('aldeed:simple-schema@1.3.3');
-  api.use('aldeed:collection2@2.3.3');
+  api.use('aldeed:collection2@2.5.0');
   api.use('simple:json-routes@2.1.0');
   api.use('prime8consulting:meteor-oauth2-server@0.0.2');
 
   api.use('clinical:base-model@1.3.5');
-  api.use('clinical:hl7-resource-datatypes@0.4.6');
+  api.use('clinical:hl7-resource-datatypes@0.6.0');
 
   api.addFiles('lib/hl7-resource-observation.js', ['client', 'server']);
   api.addFiles('server/rest.js', 'server');
