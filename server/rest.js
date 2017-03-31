@@ -1,13 +1,18 @@
+var fhirVersion = 'fhir-3.0.0';
 
-JsonRoutes.Middleware.use(
-    '/api/*',
+if(typeof oAuth2Server === 'object'){
+  // TODO:  double check that this is needed; and that the /api/ route is correct
+  JsonRoutes.Middleware.use(
+    // '/api/*',
+    '/fhir-3.0.0/*',
     oAuth2Server.oauthserver.authorise()   // OAUTH FLOW - A7.1
-);
+  );
+}
 
 
 
 
-JsonRoutes.add("get", "/fhir/Observation/:id", function (req, res, next) {
+JsonRoutes.add("get", "/" + fhirVersion + "/Observation/:id", function (req, res, next) {
   process.env.DEBUG && console.log('GET /fhir/Observation/' + req.params.id);
 
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -43,7 +48,7 @@ JsonRoutes.add("get", "/fhir/Observation/:id", function (req, res, next) {
 
 
 
-JsonRoutes.add("get", "/fhir/Observation", function (req, res, next) {
+JsonRoutes.add("get", "/" + fhirVersion + "/Observation", function (req, res, next) {
   process.env.DEBUG && console.log('GET /fhir/Observation', req.query);
 
   res.setHeader("Access-Control-Allow-Origin", "*");
