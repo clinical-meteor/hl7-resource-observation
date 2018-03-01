@@ -22,11 +22,12 @@ export {
   DynamicRoutes, 
 
   ObservationsPage,
-  ObservationsTable,
+  ObservationsTable
 
-  Observation,
-  Observations,
-  ObservationSchema
+  // Observation,
+  // Observations,
+  // ObservationSchema
 };
+
 
 
