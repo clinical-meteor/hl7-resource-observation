@@ -9,8 +9,9 @@ import { Session } from 'meteor/session';
 import { Table } from 'react-bootstrap';
 
 import { GlassCard, VerticalCanvas, Glass, DynamicSpacer } from 'meteor/clinical:glass-ui';
+import { get } from 'lodash';
 
-export default class ObservationsTable extends React.Component {
+export class ObservationsTable extends React.Component {
 
   getMeteorData() {
 
@@ -43,33 +44,16 @@ export default class ObservationsTable extends React.Component {
           unit: ''
         };
 
-        result._id =  observation._id;
-        if (observation.category && observation.category.text) {
-          result.category =  observation.category.text;
-        }
-        if (observation.valueString) {
-          result.valueString =  observation.valueString;
-        }
-        if (observation.valueQuantity && observation.valueQuantity.value) {
-          result.observationValue =  observation.valueQuantity.value;
-        }
-        if (observation.valueQuantity && observation.valueQuantity.unit) {
-          result.unit =  observation.valueQuantity.unit;
-        }
-        if (observation.subject && observation.subject.display) {
-          result.subject =  observation.subject.display;
-        }
-        if (observation.subject && observation.subject.reference) {
-          result.subjectId =  observation.subject.reference;
-        }
-        if (observation.device && observation.device.reference) {
-          result.device =  observation.device.reference;
-        }
-        result.status =  observation.status;
-
-        if (observation.effectiveDateTime) {
-          result.effectiveDateTime =  moment(observation.effectiveDateTime).format("YYYY-MM-DD hh:ss a");
-        }
+        result._id =  get(observation, '_id');
+        result.category = get(observation, 'category.text');
+        result.valueString = get(observation, 'valueString');
+        result.observationValue = get(observation, 'valueQuantity.value');
+        result.unit = get(observation, 'valueQuantity.unit');
+        result.subject = get(observation, 'subject.display');
+        result.subjectId = get(observation, 'subject.reference');
+        result.device = get(observation, 'device.reference');
+        result.status = get(observation, 'status');
+        result.effectiveDateTime =  moment(get(observation, 'effectiveDateTime')).format("YYYY-MM-DD hh:ss a");
 
         return result;
       });
@@ -129,7 +113,7 @@ export default class ObservationsTable extends React.Component {
     let tableRows = [];
     for (var i = 0; i < this.data.observations.length; i++) {
       tableRows.push(
-        <tr className="observationRow" style={this.data.style.text} onClick={ this.rowClick.bind(this, this.data.observations[i]._id)} >
+        <tr className="observationRow" key={i} style={this.data.style.text} onClick={ this.rowClick.bind(this, this.data.observations[i]._id)} >
 
           <td className='category'>{this.data.observations[i].category }</td>
           <td className='valueString'>{this.data.observations[i].valueString }</td>
@@ -147,7 +131,7 @@ export default class ObservationsTable extends React.Component {
 
     return(
       <CardText>
-        <Table id="observationsTable" responses hover >
+        <Table id="observationsTable" hover >
           <thead>
             <tr>
               <th className='category'>type</th>
@@ -173,3 +157,4 @@ export default class ObservationsTable extends React.Component {
 
 
 ReactMixin(ObservationsTable.prototype, ReactMeteorData);
+export default ObservationsTable; 

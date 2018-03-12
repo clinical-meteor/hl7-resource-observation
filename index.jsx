@@ -23,10 +23,6 @@ export {
 
   ObservationsPage,
   ObservationsTable
-
-  // Observation,
-  // Observations,
-  // ObservationSchema
 };
 
 

@@ -47,7 +47,7 @@ let defaultObservation = {
 Session.setDefault('observationDetailState', defaultObservation);
 
 
-export default class ObservationDetail extends React.Component {
+export class ObservationDetail extends React.Component {
   getMeteorData() {
     let data = {
       observationId: false,
@@ -87,6 +87,9 @@ export default class ObservationDetail extends React.Component {
   }
 
   renderDatePicker(displayDatePicker, datePickerValue){
+    if(typeof datePickerValue === "string"){
+      datePickerValue = moment(datePickerValue);
+    }
     if (displayDatePicker) {
       return (
         <DatePicker 
@@ -94,15 +97,13 @@ export default class ObservationDetail extends React.Component {
           hintText="Date of Administration" 
           container="inline" 
           mode="landscape"
-          value={ datePickerValue ? datePickerValue : ''}    
+          value={ datePickerValue ? datePickerValue : null}    
           onChange={ this.changeDate.bind(this, 'datePicker')}      
           />
       );
     }
   }
-
   render() {
-
     return (
       <div id={this.props.id} className="observationDetail">
         <CardText>
@@ -111,7 +112,7 @@ export default class ObservationDetail extends React.Component {
             ref='category.text'
             name='category.text'
             floatingLabelText='Category'
-            value={this.data.observation.category.text}
+            value={ get(this, 'data.observation.category.text') }
             onChange={ this.changeCategory.bind(this, 'category.text')}
             fullWidth
             /><br/>
@@ -121,7 +122,7 @@ export default class ObservationDetail extends React.Component {
             name='valueString.value'
             floatingLabelText='Value'
             hintText='AB+; pos; neg'
-            value={this.data.observation.valueString}
+            value={ get(this, 'data.observation.valueString') }
             onChange={ this.changeQuantityString.bind(this, 'valueString.value')}
             fullWidth
             /><br/>
@@ -131,7 +132,7 @@ export default class ObservationDetail extends React.Component {
             name='valueQuantity.value'
             floatingLabelText='Quantity'
             hintText='70.0'
-            value={this.data.observation.valueQuantity.value}
+            value={ get(this, 'data.observation.valueQuantity.value') }
             onChange={ this.changeQuantityValue.bind(this, 'valueQuantity.value')}
             fullWidth
             /><br/>
@@ -141,7 +142,7 @@ export default class ObservationDetail extends React.Component {
             name='valueQuantity.unit'
             floatingLabelText='Unit'
             hintText='kg'
-            value={this.data.observation.valueQuantity.unit}
+            value={ get(this, 'data.observation.valueQuantity.unit') }
             onChange={ this.changeQuantityUnit.bind(this, 'valueQuantity.unit')}
             fullWidth
             /><br/>
@@ -150,7 +151,7 @@ export default class ObservationDetail extends React.Component {
             ref='device.display'
             name='device.display'
             floatingLabelText='Device Name'
-            value={this.data.observation.device.display}
+            value={ get(this, 'data.observation.device.display') }
             onChange={ this.changeDeviceDisplay.bind(this, 'device.display')}
             fullWidth
             /><br/>
@@ -159,7 +160,7 @@ export default class ObservationDetail extends React.Component {
             ref='subject.display'
             name='subject.display'
             floatingLabelText='Subject Name'
-            value={this.data.observation.subject.display}
+            value={ get(this, 'data.observation.subject.display') }
             onChange={ this.changeSubjectDisplay.bind(this, 'subject.display')}
             fullWidth
             /><br/>
@@ -168,16 +169,14 @@ export default class ObservationDetail extends React.Component {
             ref='subject.reference'
             name='subject.reference'
             floatingLabelText='Subject ID'
-            value={this.data.observation.subject.reference}
+            value={ get(this, 'data.observation.subject.reference') }
             onChange={ this.changeSubjectReference.bind(this, 'subject.reference')}
             fullWidth
             /><br/>
 
-
           <br/>
             { this.renderDatePicker(this.data.displayDatePicker, get(this, 'data.observation.datePicker') ) }
           <br/>
-
 
         </CardText>
         <CardActions>
@@ -328,8 +327,8 @@ export default class ObservationDetail extends React.Component {
   }
 }
 
-
 ObservationDetail.propTypes = {
   hasUser: PropTypes.object
 };
 ReactMixin(ObservationDetail.prototype, ReactMeteorData);
+export default ObservationDetail;
