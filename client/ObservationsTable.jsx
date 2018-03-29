@@ -11,6 +11,39 @@ import { Table } from 'react-bootstrap';
 import { GlassCard, VerticalCanvas, Glass, DynamicSpacer } from 'meteor/clinical:glass-ui';
 import { get } from 'lodash';
 
+
+flattenObservation = function(observation){
+  let result = {
+    _id: '',
+    category: '',
+    code: '',
+    valueString: '',
+    observationValue: '',
+    subject: '',
+    subjectId: '',
+    status: '',
+    device: '',
+    createdBy: '',
+    effectiveDateTime: '',
+    unit: ''
+  };
+
+  result._id =  get(observation, 'id') ? get(observation, 'id') : get(observation, '_id');
+  result.category = get(observation, 'category.text', '');
+  result.code = get(observation, 'code.text', '');
+  result.valueString = get(observation, 'valueString', '');
+  result.observationValue = get(observation, 'valueQuantity.value', '');
+  result.unit = get(observation, 'valueQuantity.unit', '');
+  result.subject = get(observation, 'subject.display', '');
+  result.subjectId = get(observation, 'subject.reference', '');
+  result.device = get(observation, 'device.reference', '');
+  result.status = get(observation, 'status', '');
+  result.effectiveDateTime =  moment(get(observation, 'effectiveDateTime')).format("YYYY-MM-DD hh:ss a");
+
+  return result;
+}
+
+
 export class ObservationsTable extends React.Component {
 
   getMeteorData() {
@@ -27,35 +60,16 @@ export class ObservationsTable extends React.Component {
 
 
     if(this.props.data){
-      data.observations = this.props.data;
+      console.log('this.props.data', this.props.data);
+
+      if(this.props.data.length > 0){              
+        this.props.data.forEach(function(observation){
+          data.observations.push(flattenObservation(observation));
+        });  
+      }
     } else {
       data.observations = Observations.find().map(function(observation){
-        let result = {
-          _id: '',
-          category: '',
-          valueString: '',
-          observationValue: '',
-          subject: '',
-          subjectId: '',
-          status: '',
-          device: '',
-          createdBy: '',
-          effectiveDateTime: '',
-          unit: ''
-        };
-
-        result._id =  get(observation, '_id');
-        result.category = get(observation, 'category.text');
-        result.valueString = get(observation, 'valueString');
-        result.observationValue = get(observation, 'valueQuantity.value');
-        result.unit = get(observation, 'valueQuantity.unit');
-        result.subject = get(observation, 'subject.display');
-        result.subjectId = get(observation, 'subject.reference');
-        result.device = get(observation, 'device.reference');
-        result.status = get(observation, 'status');
-        result.effectiveDateTime =  moment(get(observation, 'effectiveDateTime')).format("YYYY-MM-DD hh:ss a");
-
-        return result;
+        return flattenObservation(observation);
       });
     }
 
@@ -116,11 +130,12 @@ export class ObservationsTable extends React.Component {
         <tr className="observationRow" key={i} style={this.data.style.text} onClick={ this.rowClick.bind(this, this.data.observations[i]._id)} >
 
           <td className='category'>{this.data.observations[i].category }</td>
+          <td className='code'>{this.data.observations[i].code }</td>
           <td className='valueString'>{this.data.observations[i].valueString }</td>
           <td className='value'>{this.data.observations[i].observationValue }</td>
           <td className='unit'>{this.data.observations[i].unit }</td>
           <td className='name'>{this.data.observations[i].subject }</td>
-          <td className='subject.reference'>{this.data.observations[i].subjectId }</td>
+          {/* <td className='subject.reference'>{this.data.observations[i].subjectId }</td> */}
           <td className='status'>{this.data.observations[i].status }</td>
           <td className='device.display'>{this.data.observations[i].device }</td>
           <td className='date'>{this.data.observations[i].effectiveDateTime }</td>
@@ -134,12 +149,13 @@ export class ObservationsTable extends React.Component {
         <Table id="observationsTable" hover >
           <thead>
             <tr>
-              <th className='category'>type</th>
+              <th className='category'>category</th>
+              <th className='code'>code</th>
               <th className='value'>value</th>
               <th className='quantity'>quantity</th>
               <th className='unit'>unit</th>
               <th className='name'>subject</th>
-              <th className='subject.reference'>subject id</th>
+              {/* <th className='subject.reference'>subject id</th> */}
               <th className='status'>status</th>
               <th className='device.display'>source</th>
               <th className='date'>date</th>
