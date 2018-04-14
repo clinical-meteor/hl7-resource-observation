@@ -84,16 +84,21 @@ Meteor.methods({
     // }
   },
   dropObservations: function(){
-    if (process.env.NODE_ENV === 'test') {
-      console.log('-----------------------------------------');
-      console.log('Dropping observations... ');
-      Observations.find().forEach(function(observation){
-        Observations.remove({_id: observation._id});
+    // if (process.env.NODE_ENV === 'test') {
+    console.log('-----------------------------------------');
+    console.log('Dropping ' + Observations.find().count() + ' observations...');
+
+    Observations.find().forEach(function(observation){
+      console.log('observation', observation.id)
+      Observations.remove({id: observation.id}, function(err){
+        if(err) console.log(err)
       });
-    } else {
-      console.log('This command can only be run in a test environment.');
-      console.log('Try setting NODE_ENV=test');
-    }
+    });
+
+    // } else {
+    //   console.log('This command can only be run in a test environment.');
+    //   console.log('Try setting NODE_ENV=test');
+    // }
   }
 
 });

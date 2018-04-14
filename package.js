@@ -1,6 +1,6 @@
 Package.describe({
   name: 'clinical:hl7-resource-observation',
-  version: '1.3.10',
+  version: '1.3.11',
   summary: 'HL7 FHIR Resource - Observation',
   git: 'https://github.com/clinical-meteor/hl7-resource-observation',
   documentation: 'README.md'
@@ -28,9 +28,10 @@ Package.onUse(function (api) {
   api.use('matb33:collection-hooks@0.7.15');
 
   api.addFiles('lib/Observations.js', ['client', 'server']);
+  
   api.addFiles('server/rest.js', 'server');
   api.addFiles('server/initialize.js', 'server');
-  api.addFiles('server/methods.js', 'server');
+  api.addFiles('server/methods.js', ['client', 'server']);
 
   if(Package['clinical:fhir-vault-server']){
     api.use('clinical:fhir-vault-server@0.0.3');
