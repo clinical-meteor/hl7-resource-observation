@@ -1,6 +1,6 @@
 Package.describe({
   name: 'clinical:hl7-resource-observation',
-  version: '1.3.11',
+  version: '1.3.12',
   summary: 'HL7 FHIR Resource - Observation',
   git: 'https://github.com/clinical-meteor/hl7-resource-observation',
   documentation: 'README.md'
@@ -34,7 +34,7 @@ Package.onUse(function (api) {
   api.addFiles('server/methods.js', ['client', 'server']);
 
   if(Package['clinical:fhir-vault-server']){
-    api.use('clinical:fhir-vault-server@0.0.3');
+    api.use('clinical:fhir-vault-server@0.0.3', ['client', 'server'], {weak: true});
   }
 
   api.export('Observation');
