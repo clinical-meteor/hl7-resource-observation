@@ -20,6 +20,7 @@ import { get, has } from 'lodash';
 
 
 let defaultObservation = {
+  resourceType: 'Observation',
   status: 'preliminary',
   category: {
     text: ''
@@ -29,10 +30,7 @@ let defaultObservation = {
     display: '',
     reference: ''
   },
-  performer: {
-    display: '',
-    reference: ''
-  },
+  performer: [],
   device: {
     display: '',
     reference: ''
@@ -44,7 +42,8 @@ let defaultObservation = {
   },
   valueString: ''
 };
-Session.setDefault('observationDetailState', defaultObservation);
+Session.setDefault('observationUpsert', false);
+Session.setDefault('selectedObservation', false);
 
 
 export class ObservationDetail extends React.Component {
@@ -59,46 +58,97 @@ export class ObservationDetail extends React.Component {
       data.displayDatePicker = this.props.displayDatePicker
     }
     
+    if (Session.get('observationUpsert')) {
+      data.observation = Session.get('observationUpsert');
+      //data.observationId = Session.get('selectedObservation');
+    } else {
 
-    if (Session.get('selectedObservation')) {
-      data.observationId = Session.get('selectedObservation');
+      if (Session.get('selectedObservation')) {
+        data.observationId = Session.get('selectedObservation');
+  
+        let selectedObservation = Observations.findOne({
+          _id: Session.get('selectedObservation')
+        });
+        console.log("selectedObservation", selectedObservation);
+  
+        if (selectedObservation) {
+          data.observation = selectedObservation;  
 
-      let selectedObservation = Observations.findOne({
-        _id: Session.get('selectedObservation')
-      });
-      console.log("selectedObservation", selectedObservation);
-
-
-      if (selectedObservation) {
-        data.observation = selectedObservation;
-
-        if (!Session.get('observationDetailState')) {
-          Session.set('observationDetailState', selectedObservation);
+          // if (typeof selectedObservation.effectiveDateTime === "object") {
+          //   data.observation.effectiveDateTime = moment(selectedObservation.effectiveDateTime).add(1, 'day').format("YYYY-MM-DD");
+          // }
         }
+      } else {
+        data.observation = defaultObservation;          
       }
-    }
-
-    if (Session.get('observationDetailState')) {
-      data.observation = Session.get('observationDetailState');
     }
 
     if(process.env.NODE_ENV === "test") console.log("ObservationDetail[data]", data);
     return data;
   }
+  changeState(field, event, value){
+    let observationUpsert;
 
-  renderDatePicker(displayDatePicker, datePickerValue){
-    if(typeof datePickerValue === "string"){
-      datePickerValue = moment(datePickerValue);
+    if(process.env.NODE_ENV === "test") console.log("ObservationDetail.changeState", field, event, value);
+
+    // by default, assume there's no other data and we're creating a new observation
+    if (Session.get('observationUpsert')) {
+      observationUpsert = Session.get('observationUpsert');
+    } else {
+      observationUpsert = defaultObservation;
+    }
+    
+    // if there's an existing organization, use them
+    if (Session.get('selectedObservation')) {
+      observationUpsert = this.data.observation;
+    } 
+
+    switch (field) {
+      case "category.text":
+        observationUpsert.category.text = value;
+        break;
+      case "valueString.value":
+        observationUpsert.valueString.value = value;
+        break;
+      case "valueQuantity.value":
+        observationUpsert.valueQuantity.value = value;
+        break;
+      case "valueQuantity.unit":
+        observationUpsert.valueQuantity.unit = value;
+        break;
+      case "device.display":
+        observationUpsert.device.display = value;
+        break;
+      case "subject.display":
+        observationUpsert.subject.display = value;
+        break;
+      case "subject.reference":
+        observationUpsert.subject.reference = value;
+        break;
+      case "effectiveDateTime":
+        observationUpsert.effectiveDateTime = value;
+        break;
+      default:
+    }
+
+    if(process.env.NODE_ENV === "test") console.log("observationUpsert", observationUpsert);
+
+    Session.set('observationUpsert', observationUpsert);
+  }
+  renderDatePicker(displayDatePicker, effectiveDateTime){
+    console.log('renderDatePicker', displayDatePicker, effectiveDateTime)
+    if(typeof effectiveDateTime === "string"){
+      effectiveDateTime = moment(effectiveDateTime);
     }
     if (displayDatePicker) {
       return (
         <DatePicker 
-          name='datePicker'
+          name='effectiveDateTime'
           hintText="Date of Administration" 
           container="inline" 
           mode="landscape"
-          value={ datePickerValue ? datePickerValue : null}    
-          onChange={ this.changeDate.bind(this, 'datePicker')}      
+          value={ effectiveDateTime ? effectiveDateTime : null}    
+          onChange={ this.changeState.bind(this, 'effectiveDateTime')}      
           />
       );
     }
@@ -113,7 +163,7 @@ export class ObservationDetail extends React.Component {
             name='category.text'
             floatingLabelText='Category'
             value={ get(this, 'data.observation.category.text') }
-            onChange={ this.changeCategory.bind(this, 'category.text')}
+            onChange={ this.changeState.bind(this, 'category.text')}
             fullWidth
             /><br/>
           <TextField
@@ -123,7 +173,7 @@ export class ObservationDetail extends React.Component {
             floatingLabelText='Value'
             hintText='AB+; pos; neg'
             value={ get(this, 'data.observation.valueString') }
-            onChange={ this.changeQuantityString.bind(this, 'valueString.value')}
+            onChange={ this.changeState.bind(this, 'valueString.value')}
             fullWidth
             /><br/>
           <TextField
@@ -133,7 +183,7 @@ export class ObservationDetail extends React.Component {
             floatingLabelText='Quantity'
             hintText='70.0'
             value={ get(this, 'data.observation.valueQuantity.value') }
-            onChange={ this.changeQuantityValue.bind(this, 'valueQuantity.value')}
+            onChange={ this.changeState.bind(this, 'valueQuantity.value')}
             fullWidth
             /><br/>
           <TextField
@@ -143,7 +193,7 @@ export class ObservationDetail extends React.Component {
             floatingLabelText='Unit'
             hintText='kg'
             value={ get(this, 'data.observation.valueQuantity.unit') }
-            onChange={ this.changeQuantityUnit.bind(this, 'valueQuantity.unit')}
+            onChange={ this.changeState.bind(this, 'valueQuantity.unit')}
             fullWidth
             /><br/>
           <TextField
@@ -152,7 +202,7 @@ export class ObservationDetail extends React.Component {
             name='device.display'
             floatingLabelText='Device Name'
             value={ get(this, 'data.observation.device.display') }
-            onChange={ this.changeDeviceDisplay.bind(this, 'device.display')}
+            onChange={ this.changeState.bind(this, 'device.display')}
             fullWidth
             /><br/>
           <TextField
@@ -161,7 +211,7 @@ export class ObservationDetail extends React.Component {
             name='subject.display'
             floatingLabelText='Subject Name'
             value={ get(this, 'data.observation.subject.display') }
-            onChange={ this.changeSubjectDisplay.bind(this, 'subject.display')}
+            onChange={ this.changeState.bind(this, 'subject.display')}
             fullWidth
             /><br/>
           <TextField
@@ -170,12 +220,12 @@ export class ObservationDetail extends React.Component {
             name='subject.reference'
             floatingLabelText='Subject ID'
             value={ get(this, 'data.observation.subject.reference') }
-            onChange={ this.changeSubjectReference.bind(this, 'subject.reference')}
+            onChange={ this.changeState.bind(this, 'subject.reference')}
             fullWidth
             /><br/>
 
           <br/>
-            { this.renderDatePicker(this.data.displayDatePicker, get(this, 'data.observation.datePicker') ) }
+            { this.renderDatePicker(this.data.displayDatePicker, get(this, 'data.observation.effectiveDateTime') ) }
           <br/>
 
         </CardText>
@@ -200,53 +250,52 @@ export class ObservationDetail extends React.Component {
     }
   }
 
-  getObservation(){
-    let observationUpdate = Session.get('observationDetailState');
-    if (!observationUpdate) {
-      observationUpdate = defaultObservation;
-    }
-  }
-
-  changeCategory(field, event, value) {
-    let observationUpdate = Session.get('observationDetailState');
-    observationUpdate.category.text = value;
-    Session.set('observationDetailState', observationUpdate);
-  }
-  changeQuantityString(field, event, value) {
-    let observationUpdate = Session.get('observationDetailState');
-    observationUpdate.valueString = value;
-    Session.set('observationDetailState', observationUpdate);
-  }
-  changeQuantityValue(field, event, value) {
-    let observationUpdate = Session.get('observationDetailState');
-    observationUpdate.valueQuantity.value = value;
-    Session.set('observationDetailState', observationUpdate);
-  }
-  changeQuantityUnit(field, event, value) {
-    let observationUpdate = Session.get('observationDetailState');
-    observationUpdate.valueQuantity.unit = value;
-    Session.set('observationDetailState', observationUpdate);
-  }
-  changeDeviceDisplay(field, event, value) {
-    let observationUpdate = Session.get('observationDetailState');
-    observationUpdate.device.display = value;
-    Session.set('observationDetailState', observationUpdate);
-  }
-  changeSubjectDisplay(field, event, value) {
-    let observationUpdate = Session.get('observationDetailState');
-    observationUpdate.subject.display = value;
-    Session.set('observationDetailState', observationUpdate);
-  }
-  changeSubjectReference(field, event, value) {
-    let observationUpdate = Session.get('observationDetailState');
-    observationUpdate.subject.reference = value;
-    Session.set('observationDetailState', observationUpdate);
-  }
-  changeDate(field, event, value) {
-    let observationUpdate = Session.get('observationDetailState');
-    observationUpdate.datePicker = value;
-    Session.set('observationDetailState', observationUpdate);
-  }
+  // getObservation(){
+  //   let observationUpsert = Session.get('observationUpsert');
+  //   if (!observationUpsert) {
+  //     observationUpsert = defaultObservation;
+  //   }
+  // }
+  // changeCategory(field, event, value) {
+  //   let observationUpsert = Session.get('observationUpsert');
+  //   observationUpsert.category.text = value;
+  //   Session.set('observationUpsert', observationUpsert);
+  // }
+  // changeQuantityString(field, event, value) {
+  //   let observationUpsert = Session.get('observationUpsert');
+  //   observationUpsert.valueString = value;
+  //   Session.set('observationUpsert', observationUpsert);
+  // }
+  // changeQuantityValue(field, event, value) {
+  //   let observationUpsert = Session.get('observationUpsert');
+  //   observationUpsert.valueQuantity.value = value;
+  //   Session.set('observationUpsert', observationUpsert);
+  // }
+  // changeQuantityUnit(field, event, value) {
+  //   let observationUpsert = Session.get('observationUpsert');
+  //   observationUpsert.valueQuantity.unit = value;
+  //   Session.set('observationUpsert', observationUpsert);
+  // }
+  // changeDeviceDisplay(field, event, value) {
+  //   let observationUpsert = Session.get('observationUpsert');
+  //   observationUpsert.device.display = value;
+  //   Session.set('observationUpsert', observationUpsert);
+  // }
+  // changeSubjectDisplay(field, event, value) {
+  //   let observationUpsert = Session.get('observationUpsert');
+  //   observationUpsert.subject.display = value;
+  //   Session.set('observationUpsert', observationUpsert);
+  // }
+  // changeSubjectReference(field, event, value) {
+  //   let observationUpsert = Session.get('observationUpsert');
+  //   observationUpsert.subject.reference = value;
+  //   Session.set('observationUpsert', observationUpsert);
+  // }
+  // changeDate(field, event, value) {
+  //   let observationUpsert = Session.get('observationUpsert');
+  //   observationUpsert.datePicker = value;
+  //   Session.set('observationUpsert', observationUpsert);
+  // }
 
 
   openTab(index) {
@@ -260,10 +309,10 @@ export class ObservationDetail extends React.Component {
   handleSaveButton() {
     if (process.env.NODE_ENV === "test") console.log("this", this);
 
-    let observationFormData = Session.get('observationDetailState');
+    let observationFormData = Session.get('observationUpsert');
     observationFormData.valueQuantity.value = Number(observationFormData.valueQuantity.value);
 
-    console.log("observationFormData", observationFormData);
+    // console.log("observationFormData", observationFormData);
 
     if (Session.get('selectedObservation')) {
 
@@ -271,32 +320,32 @@ export class ObservationDetail extends React.Component {
       Observations.update({_id: Session.get('selectedObservation')}, {$set: observationFormData }, function(error, result){
         if (error) {
           if(process.env.NODE_ENV === "test") console.log("Observations.insert[error]", error);
+          console.log('error', error)
           Bert.alert(error.reason, 'danger');
         }
         if (result) {
           HipaaLogger.logEvent({eventType: "update", userId: Meteor.userId(), userName: Meteor.user().fullName(), collectionName: "Observations", recordId: Session.get('selectedObservation')});
-          Session.set('observationFormData', defaultObservation);
-          Session.set('observationDetailState', defaultObservation);
+          Session.set('observationUpsert', false);
+          Session.set('selectedObservation', false);
           Session.set('observationPageTabIndex', 1);
           Bert.alert('Observation added!', 'success');
         }
       });
-
-
     } else {
-
       observationFormData.effectiveDateTime = new Date();
       if (process.env.NODE_ENV === "test") console.log("create a new observation", observationFormData);
 
       Observations.insert(observationFormData, function(error, result){
         if (error) {
           if(process.env.NODE_ENV === "test") console.log("Observations.insert[error]", error);
+          console.log('error', error)
           Bert.alert(error.reason, 'danger');
         }
         if (result) {
           HipaaLogger.logEvent({eventType: "create", userId: Meteor.userId(), userName: Meteor.user().fullName(), collectionName: "Observations", recordId: result});
-          Session.set('observationFormData', defaultObservation);
-          Session.set('observationDetailState', defaultObservation);
+          // Session.set('observationFormData', defaultObservation);
+          Session.set('observationUpsert', false);
+          Session.set('selectedObservation', false);
           Session.set('observationPageTabIndex', 1);
           Bert.alert('Observation added!', 'success');
         }
@@ -310,20 +359,21 @@ export class ObservationDetail extends React.Component {
   }
 
   handleDeleteButton() {
-    Meteor.call('removeObservationById', ({
-      _id: Session.get('selectedObservation')
-    }, function(error, result){
-      if (erro) {
+    console.log('delete observation...', Session.get('selectedObservation'))
+
+    Meteor.call('removeObservationById', Session.get('selectedObservation'), function(error, result){
+      if (error) {
+        console.log('error', error)
         Bert.alert(error.reason, 'danger');
       }
       if (result) {
-        HipaaLogger.logEvent({eventType: "delete", userId: Meteor.userId(), userName: Meteor.user().fullName(), collectionName: "Observations", recordId: Session.get('selectedObservation')});
-        Session.set('observationFormData', defaultObservation);
-        Session.set('observationDetailState', defaultObservation);
         Session.set('observationPageTabIndex', 1);
+        Session.set('observationUpsert', false);
+        Session.set('selectedObservation', false);
         Bert.alert('Observation deleted!', 'success');
+        HipaaLogger.logEvent({eventType: "delete", userId: Meteor.userId(), userName: Meteor.user().fullName(), collectionName: "Observations", recordId: Session.get('selectedObservation')});
       }
-    }));
+    });
   }
 }
 

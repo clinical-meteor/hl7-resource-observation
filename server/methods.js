@@ -71,17 +71,13 @@ Meteor.methods({
       console.log('Observations already exist.  Skipping.');
     }
   },
-  removeObservationById: function(){
-    // if (process.env.NODE_ENV === 'test') {
-      console.log('-----------------------------------------');
-      console.log('Removing observation... ');
-      Observations.find().forEach(function(observation){
-        Observations.remove({_id: observation._id});
-      });
-    // } else {
-    //   console.log('This command can only be run in a test environment.');
-    //   console.log('Try setting NODE_ENV=test');
-    // }
+  removeObservationById: function(observationId){
+    check(observationId, String);
+
+    console.log('-----------------------------------------');
+    console.log('Removing observation... ');
+
+    return Observations.remove({_id: observationId})
   },
   dropObservations: function(){
     // if (process.env.NODE_ENV === 'test') {
