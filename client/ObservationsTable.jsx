@@ -77,7 +77,7 @@ export class ObservationsTable extends React.Component {
     // this could be another mixin
     if (Session.get('glassBlurEnabled')) {
       data.style.filter = "blur(3px)";
-      data.style.webkitFilter = "blur(3px)";
+      data.style.WebkitFilter = "blur(3px)";
     }
 
     // this could be another mixin
