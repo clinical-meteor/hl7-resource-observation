@@ -154,10 +154,10 @@ export class VitalMeasurements extends React.Component {
         display: Meteor.user().fullName(),
         reference: Meteor.userId()
       },
-      performer: {
+      performer: [{
         display: Meteor.user().fullName(),
         reference: Meteor.userId()
-      },
+      }],
       device: {
         display: 'Web App',
         reference: 'WebApp'
@@ -180,7 +180,9 @@ export class VitalMeasurements extends React.Component {
     pulseObservation.valueQuantity.unit = 'bmp';
     pulseObservation.valueQuantity.value = this.data.state.pulse;
     
-
+    if(process.env.NODE_ENV === "test"){
+      console.log('pulseObservation', pulseObservation)
+    }
     Observations.insert(pulseObservation, function(error, result){
       if (error) {
         if(process.env.NODE_ENV === "test") console.log("Observations.insert[error]", error);
@@ -200,7 +202,10 @@ export class VitalMeasurements extends React.Component {
     respirationObservation.valueQuantity.unit = 'bmp';
     respirationObservation.valueQuantity.value = this.data.state.respiration;
     
-    Observations.insert(respirationObservation, function(error, result){
+      if(process.env.NODE_ENV === "test"){
+        console.log('respirationObservation', respirationObservation)
+      }
+      Observations.insert(respirationObservation, function(error, result){
       if (error) {
         if(process.env.NODE_ENV === "test") console.log("Observations.insert[error]", error);
         Bert.alert(error.reason, 'danger');
@@ -220,6 +225,10 @@ export class VitalMeasurements extends React.Component {
     temperatureObservation.valueQuantity.unit = 'F';
     temperatureObservation.valueQuantity.value = this.data.state.temperature;
     
+    if(process.env.NODE_ENV === "test"){
+        console.log('temperatureObservation', temperatureObservation)
+    }
+
     Observations.insert(temperatureObservation, function(error, result){
       if (error) {
         if(process.env.NODE_ENV === "test") console.log("Observations.insert[error]", error);
@@ -241,6 +250,10 @@ export class VitalMeasurements extends React.Component {
     bloodPressureObservation.valueString = this.data.state.bloodPressure + ' mmHg';    
     temperatureObservation.valueQuantity = null;
     
+    if(process.env.NODE_ENV === "test"){
+        console.log('bloodPressureObservation', bloodPressureObservation)
+    }
+
     Observations.insert(bloodPressureObservation, function(error, result){
       if (error) {
         if(process.env.NODE_ENV === "test") console.log("Observations.insert[error]", error);
