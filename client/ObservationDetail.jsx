@@ -6,7 +6,7 @@ import TextField from 'material-ui/TextField';
 import { GlassCard, VerticalCanvas, Glass, DynamicSpacer } from 'meteor/clinical:glass-ui';
 import { createObservation, removeObservation, updateObservation } from '../lib/methods';
 
-import { Bert } from 'meteor/themeteorchef:bert';
+import { Bert } from 'meteor/clinical:alert';
 
 import React from 'react';
 import { ReactMeteorData } from 'meteor/react-meteor-data';
