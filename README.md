@@ -1,13 +1,18 @@
-##clinical:hl7-resource-observation
+## clinical:hl7-resource-observation
 
-HL7 FHIR Resource - Observation
 
-===============================
-#### Conformance Statement  
+#### Licensing  
+![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-The resource in this package implements the FHIR Patient Resource DTSU2 schema provided at  [https://www.hl7.org/fhir/observation.html](https://www.hl7.org/fhir/observation.html).  
 
-===============================
+#### Integration & Verification Tests  
+[![CircleCI](https://circleci.com/gh/clinical-meteor/hl7-resource-observation/tree/master.svg?style=svg)](https://circleci.com/gh/clinical-meteor/hl7-resource-observation/tree/master)
+
+
+#### API Reference  
+The resource in this package implements the FHIR Observation Resource DTSU2 schema provided at  [https://www.hl7.org/fhir/observation.html](https://www.hl7.org/fhir/observation.html).  
+
+
 #### Installation  
 
 ````bash
@@ -19,7 +24,6 @@ INITIALIZE=true meteor
 ````
 
 
-===============================
 #### Example   
 
 ```js
@@ -47,7 +51,6 @@ var newObservation = {
 Observations.insert(newObservation);
 ```
 
-===============================
 #### Extending the Schema
 
 ```js
@@ -63,12 +66,13 @@ ExtendedObservationSchema = new SimpleSchema([
 Observations.attachSchema( ExtendedObservationSchema );
 ```
 
-===============================
+
 #### Utilities  
 
 If you're working with HL7 FHIR Resources, we recommend using [Postman](https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop?hl=en).
 
-===============================
-#### Licensing  
 
-![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)
+
+#### Acknowledgements     
+
+Many thanks to iHealth Labs, DxRx Medical, VisExcell, Parkland Center for Care Innovation, and many others for their support in creating this library.    
