@@ -10,7 +10,7 @@
 
 
 #### API Reference  
-The resource in this package implements the FHIR Observation Resource DTSU2 schema provided at  [https://www.hl7.org/fhir/observation.html](https://www.hl7.org/fhir/observation.html).  
+The resource in this package implements the FHIR Observation Resource DTSU2 schema provided at  [https://www.hl7.org/fhir/DSTU2/observation.html](https://www.hl7.org/fhir/DSTU2/observation.html).  
 
 
 #### Installation  
