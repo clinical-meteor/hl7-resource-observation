@@ -1,6 +1,6 @@
 Package.describe({
   name: 'clinical:hl7-resource-observation',
-  version: '1.3.18',
+  version: '1.3.20',
   summary: 'HL7 FHIR Resource - Observation',
   git: 'https://github.com/clinical-meteor/hl7-resource-observation',
   documentation: 'README.md'
@@ -45,8 +45,3 @@ Package.onUse(function (api) {
   api.mainModule('index.jsx', 'client');
 });
 
-// Npm.depends({
-//   "react-fontawesome": "",
-//   "react-bootstrap": "",
-//   "react-router": ""
-// })
