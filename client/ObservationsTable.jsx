@@ -68,7 +68,11 @@ export class ObservationsTable extends React.Component {
         });  
       }
     } else {
-      data.observations = Observations.find().map(function(observation){
+      let query = {};
+      if(this.props.query){
+        query = this.props.query
+      }
+      data.observations = Observations.find(query).map(function(observation){
         return flattenObservation(observation);
       });
     }
@@ -135,7 +139,6 @@ export class ObservationsTable extends React.Component {
           <td className='value'>{this.data.observations[i].observationValue }</td>
           <td className='unit'>{this.data.observations[i].unit }</td>
           <td className='name'>{this.data.observations[i].subject }</td>
-          {/* <td className='subject.reference'>{this.data.observations[i].subjectId }</td> */}
           <td className='status'>{this.data.observations[i].status }</td>
           <td className='device.display'>{this.data.observations[i].device }</td>
           <td className='date'>{this.data.observations[i].effectiveDateTime }</td>
@@ -155,11 +158,10 @@ export class ObservationsTable extends React.Component {
               <th className='quantity'>quantity</th>
               <th className='unit'>unit</th>
               <th className='name'>subject</th>
-              {/* <th className='subject.reference'>subject id</th> */}
               <th className='status'>status</th>
               <th className='device.display'>source</th>
               <th className='date'>date</th>
-              {this.renderBarcodeHeader}
+              {this.renderBarcodeHeader() }
             </tr>
           </thead>
           <tbody>
