@@ -32,11 +32,12 @@ flattenObservation = function(observation){
   result.category = get(observation, 'category.text', '');
   result.code = get(observation, 'code.text', '');
   result.valueString = get(observation, 'valueString', '');
+  result.comparator = get(observation, 'valueQuantity.comparator', '');
   result.observationValue = get(observation, 'valueQuantity.value', '');
   result.unit = get(observation, 'valueQuantity.unit', '');
   result.subject = get(observation, 'subject.display', '');
   result.subjectId = get(observation, 'subject.reference', '');
-  result.device = get(observation, 'device.reference', '');
+  result.device = get(observation, 'device.display', '');
   result.status = get(observation, 'status', '');
   result.effectiveDateTime =  moment(get(observation, 'effectiveDateTime')).format("YYYY-MM-DD hh:ss a");
 
@@ -108,7 +109,7 @@ export class ObservationsTable extends React.Component {
     return "";
   }
   rowClick(id){
-    Session.set("selectedObservation", id);
+    Session.set("selectedObservationId", id);
     Session.set('observationPageTabIndex', 2);
     Session.set('observationDetailState', false);
   }
@@ -136,6 +137,7 @@ export class ObservationsTable extends React.Component {
           <td className='category'>{this.data.observations[i].category }</td>
           <td className='code'>{this.data.observations[i].code }</td>
           <td className='valueString'>{this.data.observations[i].valueString }</td>
+          <td className='comparator'>{this.data.observations[i].comparator }</td>
           <td className='value'>{this.data.observations[i].observationValue }</td>
           <td className='unit'>{this.data.observations[i].unit }</td>
           <td className='name'>{this.data.observations[i].subject }</td>
@@ -154,12 +156,13 @@ export class ObservationsTable extends React.Component {
             <tr>
               <th className='category'>category</th>
               <th className='code'>code</th>
+              <th className='valueString'>valueString</th>
+              <th className='comparator'>comparator</th>
               <th className='value'>value</th>
-              <th className='quantity'>quantity</th>
               <th className='unit'>unit</th>
               <th className='name'>subject</th>
               <th className='status'>status</th>
-              <th className='device.display'>source</th>
+              <th className='device.display'>device</th>
               <th className='date'>date</th>
               {this.renderBarcodeHeader() }
             </tr>

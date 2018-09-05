@@ -2,7 +2,7 @@
 import { CardText, CardTitle } from 'material-ui/Card';
 import { Tab, Tabs } from 'material-ui/Tabs';
 
-import { GlassCard, VerticalCanvas, Glass, DynamicSpacer } from 'meteor/clinical:glass-ui';
+import { GlassCard, VerticalCanvas, FullPageCanvas, Glass, DynamicSpacer } from 'meteor/clinical:glass-ui';
 
 import { Meteor } from 'meteor/meteor';
 import { Session } from 'meteor/session';
@@ -15,8 +15,8 @@ import ObservationsTable from './ObservationsTable';
 
 Session.setDefault('observationPageTabIndex', 1);
 Session.setDefault('observationSearchFilter', '');
-Session.setDefault('selectedObservation', false);
-
+Session.setDefault('selectedObservationId', false);
+Session.setDefault('fhirVersion', 'v1.0.2');
 
 export class ObservationsPage extends React.Component {
   getMeteorData() {
@@ -30,8 +30,16 @@ export class ObservationsPage extends React.Component {
       },
       tabIndex: Session.get('observationPageTabIndex'),
       observationSearchFilter: Session.get('observationSearchFilter'),
-      currentObservation: Session.get('selectedObservation')
+      currentObservationId: Session.get('selectedObservationId'),
+      fhirVersion: Session.get('fhirVersion'),
+      selectedObservation: false
     };
+
+    if (Session.get('selectedObservationId')){
+      data.selectedObservation = Observations.findOne({_id: Session.get('selectedObservationId')});
+    } else {
+      data.selectedObservation = false;
+    }
 
     data.style = Glass.blur(data.style);
     data.style.appbar = Glass.darkroom(data.style.appbar);
@@ -50,32 +58,32 @@ export class ObservationsPage extends React.Component {
   onNewTab(){
     console.log("onNewTab; we should clear things...");
 
-    Session.set('selectedObservation', false);
-    Session.set('observationDetailState', {
-      resourceType: 'Observation',
-      status: 'preliminary',
-      category: {
-        text: ''
-      },
-      effectiveDateTime: '',
-      subject: {
-        display: '',
-        reference: ''
-      },
-      performer: {
-        display: '',
-        reference: ''
-      },
-      device: {
-        display: '',
-        reference: ''
-      },
-      valueQuantity: {
-        value: '',
-        unit: '',
-        system: 'http://unitsofmeasure.org'
-      }
-    });
+    Session.set('selectedObservationId', false);
+    // Session.set('observationDetailState', {
+    //   resourceType: 'Observation',
+    //   status: 'preliminary',
+    //   category: {
+    //     text: ''
+    //   },
+    //   effectiveDateTime: '',
+    //   subject: {
+    //     display: '',
+    //     reference: ''
+    //   },
+    //   performer: {
+    //     display: '',
+    //     reference: ''
+    //   },
+    //   device: {
+    //     display: '',
+    //     reference: ''
+    //   },
+    //   valueQuantity: {
+    //     value: '',
+    //     unit: '',
+    //     system: 'http://unitsofmeasure.org'
+    //   }
+    // });
   }
 
   render() {
@@ -88,13 +96,25 @@ export class ObservationsPage extends React.Component {
             />
             <Tabs id="observationsPageTabs" default value={this.data.tabIndex} onChange={this.handleTabChange} initialSelectedIndex={1}>
               <Tab className="newObservationTab" label='New' style={this.data.style.tab} onActive={ this.onNewTab } value={0} >
-                <ObservationDetail id='newObservation' displayDatePicker={true} />
+                <ObservationDetail 
+                  id='newObservation' 
+                  displayDatePicker={true} 
+                  displayBarcodes={false}
+                  observation={ this.data.selectedObservation }
+                  observationId={ this.data.currentObservationId } 
+                  />
               </Tab>
               <Tab className="observationListTab" label='Observations' onActive={this.handleActive} style={this.data.style.tab} value={1}>
                 <ObservationsTable displayBarcodes={false} />
               </Tab>
               <Tab className="observationDetailsTab" label='Detail' onActive={this.handleActive} style={this.data.style.tab} value={2}>
-                <ObservationDetail id='observationDetails' displayDatePicker={true} />
+                <ObservationDetail 
+                  id='observationDetails' 
+                  displayDatePicker={true} 
+                  displayBarcodes={false}
+                  observation={ this.data.selectedObservation }
+                  observationId={ this.data.currentObservationId } 
+                  />
               </Tab>
             </Tabs>
 
