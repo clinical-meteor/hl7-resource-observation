@@ -435,7 +435,7 @@ export class ObservationDetail extends React.Component {
       delete fhirObservationData._id;
 
       Observations.update({_id: this.data.observationId}, {$set: fhirObservationData }, {
-        validate: false, 
+        validate: true, 
         filter: false, 
         removeEmptyStrings: false
       }, function(error, result){
@@ -457,7 +457,7 @@ export class ObservationDetail extends React.Component {
       if (process.env.NODE_ENV === "test") console.log("create a new observation", fhirObservationData);
 
       Observations.insert(fhirObservationData, {
-        validate: false, 
+        validate: true, 
         filter: false, 
         removeEmptyStrings: false
       }, function(error, result){
