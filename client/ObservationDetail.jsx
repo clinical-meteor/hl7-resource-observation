@@ -17,7 +17,6 @@ import { Session } from 'meteor/session';
 import { get, set } from 'lodash';
 
 
-Session.setDefault('observationUpsert', false);
 
 export class ObservationDetail extends React.Component {
   constructor(props) {
@@ -434,11 +433,7 @@ export class ObservationDetail extends React.Component {
       if(process.env.NODE_ENV === "test") console.log("Updating observation...");
       delete fhirObservationData._id;
 
-      Observations.update({_id: this.data.observationId}, {$set: fhirObservationData }, {
-        validate: get(Meteor, 'settings.public.defaults.schemas.validate', false), 
-        filter: get(Meteor, 'settings.public.defaults.schemas.filter', false), 
-        removeEmptyStrings: get(Meteor, 'settings.public.defaults.schemas.removeEmptyStrings', false)
-      }, function(error, result){
+      Observations._collection.update({_id: this.data.observationId}, {$set: fhirObservationData },function(error, result){
         if (error) {
           if(process.env.NODE_ENV === "test") console.log("Observations.insert[error]", error);
           console.log('error', error)
@@ -446,7 +441,6 @@ export class ObservationDetail extends React.Component {
         }
         if (result) {
           HipaaLogger.logEvent({eventType: "update", userId: Meteor.userId(), userName: Meteor.user().fullName(), collectionName: "Observations", recordId: self.data.observationId});
-          Session.set('observationUpsert', false);
           Session.set('selectedObservationId', false);
           Session.set('observationPageTabIndex', 1);
           Bert.alert('Observation added!', 'success');
@@ -456,11 +450,7 @@ export class ObservationDetail extends React.Component {
       fhirObservationData.effectiveDateTime = new Date();
       if (process.env.NODE_ENV === "test") console.log("create a new observation", fhirObservationData);
 
-      Observations.insert(fhirObservationData, {
-        validate: get(Meteor, 'settings.public.defaults.schemas.validate', false), 
-        filter: get(Meteor, 'settings.public.defaults.schemas.filter', false), 
-        removeEmptyStrings: get(Meteor, 'settings.public.defaults.schemas.removeEmptyStrings', false)
-      }, function(error, result){
+      Observations._collection.insert(fhirObservationData, function(error, result){
         if (error) {
           if(process.env.NODE_ENV === "test") console.log("Observations.insert[error]", error);
           console.log('error', error)
@@ -468,8 +458,6 @@ export class ObservationDetail extends React.Component {
         }
         if (result) {
           HipaaLogger.logEvent({eventType: "create", userId: Meteor.userId(), userName: Meteor.user().fullName(), collectionName: "Observations", recordId: self.data.observationId});
-          // Session.set('fhirObservationData', defaultObservation);
-          Session.set('observationUpsert', false);
           Session.set('selectedObservationId', false);
           Session.set('observationPageTabIndex', 1);
           Bert.alert('Observation added!', 'success');
@@ -493,7 +481,6 @@ export class ObservationDetail extends React.Component {
       }
       if (result) {
         Session.set('observationPageTabIndex', 1);
-        Session.set('observationUpsert', false);
         Session.set('selectedObservationId', false);
         Bert.alert('Observation deleted!', 'success');
         HipaaLogger.logEvent({eventType: "delete", userId: Meteor.userId(), userName: Meteor.user().fullName(), collectionName: "Observations", recordId: self.data.observationId});
