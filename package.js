@@ -1,6 +1,6 @@
 Package.describe({
   name: 'clinical:hl7-resource-observation',
-  version: '1.4.2',
+  version: '1.4.3',
   summary: 'HL7 FHIR Resource - Observation',
   git: 'https://github.com/clinical-meteor/hl7-resource-observation',
   documentation: 'README.md'
@@ -47,5 +47,7 @@ Package.onUse(function (api) {
 });
 
 Npm.depends({
-  "simpl-schema": "1.5.3"
+  "simpl-schema": "1.5.3",
+  "moment": "2.22.2",
+  "lodash": "4.17.4"
 })
