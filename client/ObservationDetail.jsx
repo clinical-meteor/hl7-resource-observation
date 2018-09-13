@@ -474,7 +474,7 @@ export class ObservationDetail extends React.Component {
   handleDeleteButton() {
     console.log('Delete observation...', this.data.observationId)
     let self = this;
-    Observations.remove({_id: this.data.observationId}, function(error, result){
+    Observations._collection.remove({_id: this.data.observationId}, function(error, result){
       if (error) {
         console.log('error', error)
         Bert.alert(error.reason, 'danger');
