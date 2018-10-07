@@ -56,6 +56,8 @@ export class ObservationDetail extends React.Component {
         subjectDisplay: '',
         subjectReference: '',
         effectiveDateTime: '',
+        loincCode: '',
+        loincCodeText: '',
         status: ''
       }
     }
@@ -74,6 +76,9 @@ export class ObservationDetail extends React.Component {
     formData.subjectReference = get(observation, 'subject.reference')
     formData.effectiveDateTime = get(observation, 'effectiveDateTime')
     formData.status = get(observation, 'status')
+
+    formData.loincCode = get(observation, 'code.codeable[0].code')
+    formData.loincCodeText = get(observation, 'code..codeable[0].display')
 
     return formData;
   }
@@ -254,6 +259,32 @@ export class ObservationDetail extends React.Component {
             </Col>
           </Row>
           <Row>
+          <Col md={3}>
+              <TextField
+                id='loincCodeInput'
+                ref='loincCode'
+                name='loincCode'
+                floatingLabelText='LOINC Code'
+                value={ get(formData, 'loincCode') }
+                onChange={ this.changeState.bind(this, 'loincCode')}
+                hintText='4548-4'
+                floatingLabelFixed={true}
+                fullWidth
+                /><br/>
+            </Col>
+            <Col md={3}>
+              <TextField
+                id='loincCodeTextInput'
+                ref='loincCodeText'
+                name='loincCodeText'
+                floatingLabelText='LOINC Code Text'
+                value={ get(formData, 'loincCodeText') }
+                onChange={ this.changeState.bind(this, 'loincCodeText')}
+                hintText='HbA1c'
+                floatingLabelFixed={true}
+                fullWidth
+                /><br/>
+            </Col>
             <Col md={3}>
               <TextField
                 id='deviceDisplayInput'
@@ -346,6 +377,12 @@ export class ObservationDetail extends React.Component {
       case "status":
         set(formData, 'status', textValue)
         break;
+      case "loincCode":
+        set(formData, 'loincCode', textValue)
+        break;
+      case "loincCodeText":
+        set(formData, 'loincCodeText', textValue)
+        break;
     }
 
     if(process.env.NODE_ENV === "test") console.log("formData", formData);
@@ -388,6 +425,12 @@ export class ObservationDetail extends React.Component {
       case "status":
         set(observationData, 'status', textValue)
         break;    
+      case "loincCode":
+        set(formData, 'code.coding[0].code', textValue)
+        break;
+      case "loincCodeText":
+        set(formData, 'code.coding[0].display', textValue)
+        break;
     }
     return observationData;
   }
