@@ -176,14 +176,16 @@ export class VitalMeasurements extends React.Component {
     // PULSE
 
     var pulseObservation = defaultObservation;
-    pulseObservation.category.text = 'Pulse';
+    pulseObservation.category = {
+      text: 'Pulse'
+    };
     pulseObservation.valueQuantity.unit = 'bmp';
     pulseObservation.valueQuantity.value = this.data.state.pulse;
     
     if(process.env.NODE_ENV === "test"){
       console.log('pulseObservation', pulseObservation)
     }
-    Observations.insert(pulseObservation, function(error, result){
+    Observations._collection.insert(pulseObservation, function(error, result){
       if (error) {
         if(process.env.NODE_ENV === "test") console.log("Observations.insert[error]", error);
         Bert.alert(error.reason, 'danger');
@@ -198,14 +200,16 @@ export class VitalMeasurements extends React.Component {
     // RESPIRATION
 
     var respirationObservation = defaultObservation;
-    respirationObservation.category.text = 'Respiration';
+    respirationObservation.category = {
+      text: 'Respiration'
+    };
     respirationObservation.valueQuantity.unit = 'bmp';
     respirationObservation.valueQuantity.value = this.data.state.respiration;
     
       if(process.env.NODE_ENV === "test"){
         console.log('respirationObservation', respirationObservation)
       }
-      Observations.insert(respirationObservation, function(error, result){
+      Observations._collection.insert(respirationObservation, function(error, result){
       if (error) {
         if(process.env.NODE_ENV === "test") console.log("Observations.insert[error]", error);
         Bert.alert(error.reason, 'danger');
@@ -221,7 +225,9 @@ export class VitalMeasurements extends React.Component {
     // RESPIRATION
 
     var temperatureObservation = defaultObservation;
-    temperatureObservation.category.text = 'Temperature';
+    temperatureObservation.category = {
+      text: 'Temperature'
+    };
     temperatureObservation.valueQuantity.unit = 'F';
     temperatureObservation.valueQuantity.value = this.data.state.temperature;
     
@@ -229,7 +235,7 @@ export class VitalMeasurements extends React.Component {
         console.log('temperatureObservation', temperatureObservation)
     }
 
-    Observations.insert(temperatureObservation, function(error, result){
+    Observations._collection.insert(temperatureObservation, function(error, result){
       if (error) {
         if(process.env.NODE_ENV === "test") console.log("Observations.insert[error]", error);
         Bert.alert(error.reason, 'danger');
@@ -246,7 +252,9 @@ export class VitalMeasurements extends React.Component {
 
     var bloodPressureObservation = defaultObservation;
 
-    bloodPressureObservation.category.text = 'Blood Pressure';
+    bloodPressureObservation.category = {
+      text: 'Blood Pressure'
+    };
     bloodPressureObservation.valueString = this.data.state.bloodPressure + ' mmHg';    
     temperatureObservation.valueQuantity = null;
     
@@ -254,7 +262,7 @@ export class VitalMeasurements extends React.Component {
         console.log('bloodPressureObservation', bloodPressureObservation)
     }
 
-    Observations.insert(bloodPressureObservation, function(error, result){
+    Observations._collection.insert(bloodPressureObservation, function(error, result){
       if (error) {
         if(process.env.NODE_ENV === "test") console.log("Observations.insert[error]", error);
         Bert.alert(error.reason, 'danger');

@@ -2,6 +2,7 @@
 
 import ObservationsPage from './client/ObservationsPage';
 import ObservationsTable from './client/ObservationsTable';
+import VitalMeasurements from './client/VitalMeasurements';
 import HealthLog from './client/HealthLog';
 
 var DynamicRoutes = [{
@@ -28,6 +29,7 @@ export {
 
   ObservationsPage,
   ObservationsTable,
+  VitalMeasurements,
 
   HealthLog
 };
