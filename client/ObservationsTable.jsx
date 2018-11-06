@@ -11,10 +11,13 @@ import { Table } from 'react-bootstrap';
 import { GlassCard, VerticalCanvas, Glass, DynamicSpacer } from 'meteor/clinical:glass-ui';
 import { get } from 'lodash';
 
+import { FaTags, FaCode, FaPuzzlePiece, FaLock  } from 'react-icons/fa';
+
 
 flattenObservation = function(observation){
   let result = {
     _id: '',
+    meta: '',
     category: '',
     code: '',
     valueString: '',
@@ -40,6 +43,8 @@ flattenObservation = function(observation){
   result.device = get(observation, 'device.display', '');
   result.status = get(observation, 'status', '');
   result.effectiveDateTime =  moment(get(observation, 'effectiveDateTime')).format("YYYY-MM-DD hh:ss a");
+
+  result.meta = get(observation, 'category.text', '');
 
   return result;
 }
@@ -134,6 +139,12 @@ export class ObservationsTable extends React.Component {
       tableRows.push(
         <tr className="observationRow" key={i} style={this.data.style.text} onClick={ this.rowClick.bind(this, this.data.observations[i]._id)} >
 
+          <td className='meta' style={{width: '100px'}}>
+            <FaLock style={{marginLeft: '2px', marginRight: '2px'}} />
+            <FaTags style={{marginLeft: '2px', marginRight: '2px'}} />
+            <FaCode style={{marginLeft: '2px', marginRight: '2px'}} />
+            <FaPuzzlePiece style={{marginLeft: '2px', marginRight: '2px'}} />
+          </td>
           <td className='category'>{this.data.observations[i].category }</td>
           <td className='code'>{this.data.observations[i].code }</td>
           <td className='valueString'>{this.data.observations[i].valueString }</td>
@@ -154,16 +165,17 @@ export class ObservationsTable extends React.Component {
         <Table id="observationsTable" hover >
           <thead>
             <tr>
-              <th className='category'>category</th>
-              <th className='code'>code</th>
-              <th className='valueString'>valueString</th>
-              <th className='comparator'>comparator</th>
-              <th className='value'>value</th>
-              <th className='unit'>unit</th>
-              <th className='name'>subject</th>
-              <th className='status'>status</th>
-              <th className='device.display'>device</th>
-              <th className='date'>date</th>
+              <th className='meta'>Meta</th>
+              <th className='category'>Category</th>
+              <th className='code'>Code</th>
+              <th className='valueString'>ValueString</th>
+              <th className='comparator'>Comparator</th>
+              <th className='value'>Value</th>
+              <th className='unit'>Unit</th>
+              <th className='name'>Subject</th>
+              <th className='status'>Status</th>
+              <th className='device.display'>Device</th>
+              <th className='date'>Date</th>
               {this.renderBarcodeHeader() }
             </tr>
           </thead>
