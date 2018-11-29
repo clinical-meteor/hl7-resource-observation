@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactMixin from 'react-mixin';
 import { ReactMeteorData } from 'meteor/react-meteor-data';
+import PropTypes from 'prop-types';
 
 import { Card, CardMedia, CardTitle, CardText, CardActions } from 'material-ui/Card';
 import { Meteor } from 'meteor/meteor';
@@ -127,6 +128,34 @@ export class ObservationsTable extends React.Component {
       );
     }
   }
+  renderSubject(id){
+    if (this.props.showSubjects) {
+      return (
+        <td className='name'>{ id }</td>
+      );
+    }
+  }
+  renderSubjectHeader(){
+    if (this.props.showSubjects) {
+      return (
+        <th className='name'>subject</th>
+      );
+    }
+  }
+  renderDevice(id){
+    if (this.props.showDevices) {
+      return (
+        <td className='device.display'>{device }</td>
+      );
+    }
+  }
+  renderDeviceHeader(){
+    if (this.props.showDevices) {
+      return (
+        <th className='device.display'>device</th>
+      );
+    }
+  }
   
   render () {
     let tableRows = [];
@@ -140,9 +169,9 @@ export class ObservationsTable extends React.Component {
           <td className='comparator'>{this.data.observations[i].comparator }</td>
           <td className='value'>{this.data.observations[i].observationValue }</td>
           <td className='unit'>{this.data.observations[i].unit }</td>
-          <td className='name'>{this.data.observations[i].subject }</td>
+          {this.renderSubject(this.data.observations[i].subject)}
           <td className='status'>{this.data.observations[i].status }</td>
-          <td className='device.display'>{this.data.observations[i].device }</td>
+          {this.renderDevice(this.data.observations[i].device)}
           <td className='date'>{this.data.observations[i].effectiveDateTime }</td>
           {this.renderBarcode(this.data.observations[i]._id)}
         </tr>
@@ -160,9 +189,9 @@ export class ObservationsTable extends React.Component {
               <th className='comparator'>comparator</th>
               <th className='value'>value</th>
               <th className='unit'>unit</th>
-              <th className='name'>subject</th>
+              {this.renderSubjectHeader() }
               <th className='status'>status</th>
-              <th className='device.display'>device</th>
+              {this.renderDeviceHeader() }
               <th className='date'>date</th>
               {this.renderBarcodeHeader() }
             </tr>
@@ -176,6 +205,14 @@ export class ObservationsTable extends React.Component {
   }
 }
 
+ObservationsTable.propTypes = {
+  barcodes: PropTypes.bool,
+  data: PropTypes.array,
+  query: PropTypes.object,
+  paginationLimit: PropTypes.number,
+  showSubjects: PropTypes.bool,
+  showDevices: PropTypes.bool
+};
 
 ReactMixin(ObservationsTable.prototype, ReactMeteorData);
 export default ObservationsTable; 

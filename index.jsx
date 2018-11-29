@@ -2,6 +2,7 @@
 
 import ObservationsPage from './client/ObservationsPage';
 import ObservationsTable from './client/ObservationsTable';
+import ObservationDetail from './client/ObservationDetail';
 import VitalMeasurements from './client/VitalMeasurements';
 import HealthLog from './client/HealthLog';
 
@@ -29,6 +30,7 @@ export {
 
   ObservationsPage,
   ObservationsTable,
+  ObservationDetail,
   VitalMeasurements,
 
   HealthLog

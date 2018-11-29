@@ -85,7 +85,25 @@ export class ObservationsPage extends React.Component {
     //   }
     // });
   }
+  onInsert(observationId){
+    HipaaLogger.logEvent({eventType: "create", userId: Meteor.userId(), userName: Meteor.user().fullName(), collectionName: "Observations", recordId: observationId});
+    Session.set('selectedObservationId', false);
+    Session.set('observationPageTabIndex', 1);
 
+  }
+  onUpdate(observationId){
+    HipaaLogger.logEvent({eventType: "update", userId: Meteor.userId(), userName: Meteor.user().fullName(), collectionName: "Observations", recordId: observationId});
+    Session.set('selectedObservationId', false);
+    Session.set('observationPageTabIndex', 1);
+  }
+  onRemove(observationId){
+    Session.set('observationPageTabIndex', 1);
+    Session.set('selectedObservationId', false);
+    HipaaLogger.logEvent({eventType: "delete", userId: Meteor.userId(), userName: Meteor.user().fullName(), collectionName: "Observations", recordId: observationId});
+  }
+  onCancel(){
+    Session.set('observationPageTabIndex', 1);
+  }
   render() {
     return (
       <div id="observationsPage">
@@ -100,6 +118,7 @@ export class ObservationsPage extends React.Component {
                   id='newObservation' 
                   displayDatePicker={true} 
                   displayBarcodes={false}
+                  showHints={true}
                   observation={ this.data.selectedObservation }
                   observationId={ this.data.currentObservationId } 
                   />
@@ -114,6 +133,12 @@ export class ObservationsPage extends React.Component {
                   displayBarcodes={false}
                   observation={ this.data.selectedObservation }
                   observationId={ this.data.currentObservationId } 
+                  showPatientInputs={true}
+                  showHints={false}
+                  onInsert={ this.onInsert }
+                  onUpdate={ this.onUpdate }
+                  onRemove={ this.onRemove }
+                  onCancel={ this.onCancel }
                   />
               </Tab>
             </Tabs>

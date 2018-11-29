@@ -11,6 +11,11 @@ import { Grid, Row, Col, ListGroupItem, FormControl, Button } from 'react-bootst
 import { browserHistory } from 'react-router';
 import { get } from 'lodash';
 
+import { IoIosHeartEmpty } from 'react-icons/io';
+import { IoMdPulse} from 'react-icons/io';
+import { FiThermometer } from 'react-icons/fi';
+import { FaStethoscope } from 'react-icons/fa';
+
 var FontAwesome = require('react-fontawesome');
 
 Session.setDefault('vitalsForm', {
@@ -72,53 +77,70 @@ export class VitalMeasurements extends React.Component {
       <GlassCard id="addPostCard">
         <CardText>
           <Row>
-            <Col xs={6}>
+            <Col md={3}>
+              <IoMdPulse style={{position: 'absolute', top: '40px' }} />
               <TextField
                 id='puleInput'
                 ref='pulse'
                 name='pulse'
-                floatingLabelText="Pulse (bmp)"
+                floatingLabelText="Pulse"
                 value={this.data.state.pulse}
                 hintText='60'
                 onChange={this.changePost.bind(this, 'pulse')}
-                fullWidth
-                /><br/>
-              <TextField
-                id='temperatureInput'
-                ref='temperature'
-                name='temperature'
-                floatingLabelText="Temperature (f/c)"
-                hintText='98.6'
-                value={this.data.state.temperature}
-                onChange={this.changePost.bind(this, 'temperature')}
+                floatingLabelStyle={{marginLeft: '20px'}}
+                inputStyle={{marginLeft: '20px'}}
+                hintStyle={{marginLeft: '20px'}}
                 fullWidth
                 /><br/>
             </Col>
-            <Col xs={6}>
+            <Col md={3}>
+              <FiThermometer style={{position: 'absolute', top: '40px' }} />
               <TextField
-                id='respirationRate'
-                ref='respiration'
-                name='respiration'
-                hintText='15'
-                floatingLabelText="Respiration (bpm)"
-                value={this.data.state.respiration}
-                onChange={this.changePost.bind(this, 'respiration')}
+                id='temperatureInput'
+                name='temperature'
+                floatingLabelText="Temperature"
+                hintText='98.6'
+                value={this.data.state.temperature}
+                onChange={this.changePost.bind(this, 'temperature')}
+                floatingLabelStyle={{marginLeft: '20px'}}
+                inputStyle={{marginLeft: '20px'}}
+                hintStyle={{marginLeft: '20px'}}
                 fullWidth
                 /><br/>
+            </Col>
+            <Col md={3}>
+              <FaStethoscope style={{position: 'absolute', top: '40px' }} />
+              <TextField
+                id='respirationRate'
+                name='respiration'
+                hintText='15'
+                floatingLabelText="Respiration"
+                value={this.data.state.respiration}
+                onChange={this.changePost.bind(this, 'respiration')}
+                floatingLabelStyle={{marginLeft: '20px'}}
+                inputStyle={{marginLeft: '20px'}}
+                hintStyle={{marginLeft: '20px'}}
+                fullWidth
+                /><br/>
+            </Col>
+            <Col md={3}>
+              <IoIosHeartEmpty style={{position: 'absolute', top: '40px' }} />
               <TextField
                 id='bloodPressureInput'
-                ref='bloodPressure'
                 name='bloodPressure'
-                floatingLabelText="Blood Pressure (s/d)"
+                floatingLabelText="Blood Pressure"
                 hintText='120 / 80'
                 value={this.data.state.bloodPressure}
                 onChange={this.changePost.bind(this, 'bloodPressure')}
+                floatingLabelStyle={{marginLeft: '20px'}}
+                inputStyle={{marginLeft: '20px'}}
+                hintStyle={{marginLeft: '20px'}}
                 fullWidth
                 /><br/>
             </Col>
           </Row>
-          { spoonCounter }
-          <br />
+          {/* { spoonCounter }
+          <br /> */}
           <TextField
             id='notesInput'
             ref='notesContent'
@@ -127,7 +149,8 @@ export class VitalMeasurements extends React.Component {
             value={this.data.state.notes}
             onChange={this.changePost.bind(this, 'notes')}
             multiLine={true}
-            rows={5}
+            rows={4}
+            floatingLabelFixed={true}
             fullWidth
             /><br/>
           <br />
