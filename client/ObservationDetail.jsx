@@ -123,7 +123,7 @@ export class ObservationDetail extends React.Component {
       data.form = this.dehydrateFhirResource(this.props.observation);
     }
 
-    console.log("ObservationDetail[data]", data);
+    //console.log("ObservationDetail[data]", data);
     return data;
   }
 
