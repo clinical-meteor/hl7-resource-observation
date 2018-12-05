@@ -53,7 +53,8 @@ export class ObservationsPage extends React.Component {
   handleTabChange(index){
     Session.set('observationPageTabIndex', index);
   }
-
+  handleActive(index){
+  }
   // this could be a mixin
   onNewTab(){
     console.log("onNewTab; we should clear things...");

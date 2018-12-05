@@ -104,7 +104,16 @@ export class ObservationsTable extends React.Component {
     source[row][key] = value;
     this.setState({source});
   }
-
+  displayOnMobile(width){
+    let style = {};
+    if(['iPhone'].includes(window.navigator.platform)){
+      style.display = "none";
+    }
+    if(width){
+      style.width = width;
+    }
+    return style;
+  }
   handleSelect(selected) {
     this.setState({selected});
   }
@@ -147,7 +156,7 @@ export class ObservationsTable extends React.Component {
       );
     }
   }
-  renderDevice(id){
+  renderDevice(device){
     if (this.props.showDevices) {
       return (
         <td className='device.display'>{device }</td>
@@ -161,6 +170,36 @@ export class ObservationsTable extends React.Component {
       );
     }
   }
+
+
+  renderValueString(valueString){
+    if (this.props.showValueString) {
+      return (
+        <td className='value'>{ valueString }</td>
+      );
+    }
+  }
+  renderValueStringHeader(){
+    if (this.props.showValueString) {
+      return (
+        <th className='value'>Value</th>
+      );
+    }
+  }
+  renderComparator(comparator){
+    if (this.props.showComparator) {
+      return (
+        <td className='comparator'>{ comparator }</td>
+      );
+    }
+  }
+  renderComparatorHeader(){
+    if (this.props.showComparator) {
+      return (
+        <th className='comparator'>Comparator</th>
+        );
+    }
+  }
   
   render () {
     let tableRows = [];
@@ -168,7 +207,7 @@ export class ObservationsTable extends React.Component {
       tableRows.push(
         <tr className="observationRow" key={i} style={this.data.style.text} onClick={ this.rowClick.bind(this, this.data.observations[i]._id)} >
 
-          <td className='meta' style={{width: '100px'}}>
+          <td className='meta' style={ this.displayOnMobile('100px')} >
             <FaLock style={{marginLeft: '2px', marginRight: '2px'}} />
             <FaTags style={{marginLeft: '2px', marginRight: '2px'}} />
             <FaCode style={{marginLeft: '2px', marginRight: '2px'}} />
@@ -176,12 +215,11 @@ export class ObservationsTable extends React.Component {
           </td>
           <td className='category'>{this.data.observations[i].category }</td>
           <td className='code'>{this.data.observations[i].code }</td>
-          <td className='valueString'>{this.data.observations[i].valueString }</td>
-          <td className='comparator'>{this.data.observations[i].comparator }</td>
-          <td className='value'>{this.data.observations[i].observationValue }</td>
+          {this.renderComparator(this.data.observations[i].comparator)}
+          {this.renderValueString(this.data.observations[i].observationValue)}
           <td className='unit'>{this.data.observations[i].unit }</td>
           {this.renderSubject(this.data.observations[i].subject)}
-          <td className='status'>{this.data.observations[i].status }</td>
+          <td className='status' style={ this.displayOnMobile()} >{this.data.observations[i].status }</td>
           {this.renderDevice(this.data.observations[i].device)}
           <td className='date'>{this.data.observations[i].effectiveDateTime }</td>
           {this.renderBarcode(this.data.observations[i]._id)}
@@ -194,15 +232,14 @@ export class ObservationsTable extends React.Component {
         <Table id="observationsTable" hover >
           <thead>
             <tr>
-              <th className='meta'>Meta</th>
+              <th className='meta' style={ this.displayOnMobile('100px')}>Meta</th>
               <th className='category'>Category</th>
               <th className='code'>Code</th>
-              <th className='valueString'>ValueString</th>
-              <th className='comparator'>Comparator</th>
-              <th className='value'>Value</th>
+              {this.renderComparatorHeader() }
+              {this.renderValueStringHeader() }
               <th className='unit'>Unit</th>
               {this.renderSubjectHeader() }
-              <th className='status'>Status</th>
+              <th className='status' style={ this.displayOnMobile()} >Status</th>
               {this.renderDeviceHeader() }
               <th className='date'>Date</th>
               {this.renderBarcodeHeader() }
@@ -223,7 +260,9 @@ ObservationsTable.propTypes = {
   query: PropTypes.object,
   paginationLimit: PropTypes.number,
   showSubjects: PropTypes.bool,
-  showDevices: PropTypes.bool
+  showDevices: PropTypes.bool,
+  showValueString: PropTypes.bool,
+  showComparator: PropTypes.bool
 };
 
 ReactMixin(ObservationsTable.prototype, ReactMeteorData);

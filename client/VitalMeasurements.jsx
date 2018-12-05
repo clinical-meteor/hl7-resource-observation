@@ -4,7 +4,7 @@ import { ReactMeteorData } from 'meteor/react-meteor-data';
 
 import { CardTitle, CardText, TextField, RaisedButton } from 'material-ui';
 
-import { GlassCard } from 'meteor/clinical:glass-ui';
+import { GlassCard, Glass } from 'meteor/clinical:glass-ui';
 import { Meteor } from 'meteor/meteor';
 
 import { Grid, Row, Col, ListGroupItem, FormControl, Button } from 'react-bootstrap';
@@ -16,8 +16,11 @@ import { IoMdPulse} from 'react-icons/io';
 import { FiThermometer } from 'react-icons/fi';
 import { FaStethoscope } from 'react-icons/fa';
 
+import { Tab, Tabs } from 'material-ui/Tabs';
+
 var FontAwesome = require('react-fontawesome');
 
+Session.setDefault('healthLogTabIndex', 0);
 Session.setDefault('vitalsForm', {
   pulse: '',
   temperature: '',
@@ -28,7 +31,16 @@ Session.setDefault('vitalsForm', {
 export class VitalMeasurements extends React.Component {
   getMeteorData() {
     let data = {
-      style: {},
+      style: {
+        opacity: Session.get('globalOpacity'),
+        tab: {
+          borderBottom: '1px solid lightgray',
+          borderRight: '1px solid white',
+          borderTop: '1px solid white',
+          borderLeft: '1px solid white'
+        }
+      },
+      tabIndex: Session.get('healthLogTabIndex'),
       state: {
         pulse: '',
         temperature: '',
@@ -42,7 +54,19 @@ export class VitalMeasurements extends React.Component {
       data.state = Session.get('vitalsForm');
     }
 
+    data.style = Glass.blur(data.style);
+    data.style.tab = Glass.darkroom(data.style.tab);
+
     return data;
+  }
+  handleTabChange(index){
+    Session.set('healthLogTabIndex', index);
+  }
+  onActive(){
+
+  }
+  onNewTab(){
+
   }
   render(){
       var spoonCounter;
@@ -76,84 +100,99 @@ export class VitalMeasurements extends React.Component {
     return (
       <GlassCard id="addPostCard">
         <CardText>
-          <Row>
-            <Col md={3}>
-              <IoMdPulse style={{position: 'absolute', top: '40px' }} />
-              <TextField
-                id='puleInput'
-                ref='pulse'
-                name='pulse'
-                floatingLabelText="Pulse"
-                value={this.data.state.pulse}
-                hintText='60'
-                onChange={this.changePost.bind(this, 'pulse')}
-                floatingLabelStyle={{marginLeft: '20px'}}
-                inputStyle={{marginLeft: '20px'}}
-                hintStyle={{marginLeft: '20px'}}
-                fullWidth
-                /><br/>
-            </Col>
-            <Col md={3}>
-              <FiThermometer style={{position: 'absolute', top: '40px' }} />
-              <TextField
-                id='temperatureInput'
-                name='temperature'
-                floatingLabelText="Temperature"
-                hintText='98.6'
-                value={this.data.state.temperature}
-                onChange={this.changePost.bind(this, 'temperature')}
-                floatingLabelStyle={{marginLeft: '20px'}}
-                inputStyle={{marginLeft: '20px'}}
-                hintStyle={{marginLeft: '20px'}}
-                fullWidth
-                /><br/>
-            </Col>
-            <Col md={3}>
-              <FaStethoscope style={{position: 'absolute', top: '40px' }} />
-              <TextField
-                id='respirationRate'
-                name='respiration'
-                hintText='15'
-                floatingLabelText="Respiration"
-                value={this.data.state.respiration}
-                onChange={this.changePost.bind(this, 'respiration')}
-                floatingLabelStyle={{marginLeft: '20px'}}
-                inputStyle={{marginLeft: '20px'}}
-                hintStyle={{marginLeft: '20px'}}
-                fullWidth
-                /><br/>
-            </Col>
-            <Col md={3}>
-              <IoIosHeartEmpty style={{position: 'absolute', top: '40px' }} />
-              <TextField
-                id='bloodPressureInput'
-                name='bloodPressure'
-                floatingLabelText="Blood Pressure"
-                hintText='120 / 80'
-                value={this.data.state.bloodPressure}
-                onChange={this.changePost.bind(this, 'bloodPressure')}
-                floatingLabelStyle={{marginLeft: '20px'}}
-                inputStyle={{marginLeft: '20px'}}
-                hintStyle={{marginLeft: '20px'}}
-                fullWidth
-                /><br/>
-            </Col>
-          </Row>
-          {/* { spoonCounter }
-          <br /> */}
-          <TextField
-            id='notesInput'
-            ref='notesContent'
-            name='notesContent'
-            floatingLabelText="New clinical impression..."
-            value={this.data.state.notes}
-            onChange={this.changePost.bind(this, 'notes')}
-            multiLine={true}
-            rows={4}
-            floatingLabelFixed={true}
-            fullWidth
-            /><br/>
-          <br />
+        <Tabs id="observationsPageTabs" default value={this.data.tabIndex} onChange={this.handleTabChange} initialSelectedIndex={0}>
+              <Tab className="vitalsTab" label='Vitals' style={this.data.style.tab} value={0} >
+                <Row style={{minHeight: '200px'}}>
+                  <Col md={3}>
+                    <IoMdPulse style={{position: 'absolute', top: '40px' }} />
+                    <TextField
+                      id='puleInput'
+                      ref='pulse'
+                      name='pulse'
+                      floatingLabelText="Pulse"
+                      value={this.data.state.pulse}
+                      hintText='60'
+                      onChange={this.changePost.bind(this, 'pulse')}
+                      floatingLabelStyle={{marginLeft: '20px'}}
+                      inputStyle={{marginLeft: '20px'}}
+                      hintStyle={{marginLeft: '20px'}}
+                      fullWidth
+                      /><br/>
+                  </Col>
+                  <Col md={3}>
+                    <FiThermometer style={{position: 'absolute', top: '40px' }} />
+                    <TextField
+                      id='temperatureInput'
+                      name='temperature'
+                      floatingLabelText="Temperature"
+                      hintText='98.6'
+                      value={this.data.state.temperature}
+                      onChange={this.changePost.bind(this, 'temperature')}
+                      floatingLabelStyle={{marginLeft: '20px'}}
+                      inputStyle={{marginLeft: '20px'}}
+                      hintStyle={{marginLeft: '20px'}}
+                      fullWidth
+                      /><br/>
+                  </Col>
+                  <Col md={3}>
+                    <FaStethoscope style={{position: 'absolute', top: '40px' }} />
+                    <TextField
+                      id='respirationRate'
+                      name='respiration'
+                      hintText='15'
+                      floatingLabelText="Respiration"
+                      value={this.data.state.respiration}
+                      onChange={this.changePost.bind(this, 'respiration')}
+                      floatingLabelStyle={{marginLeft: '20px'}}
+                      inputStyle={{marginLeft: '20px'}}
+                      hintStyle={{marginLeft: '20px'}}
+                      fullWidth
+                      /><br/>
+                  </Col>
+                  <Col md={3}>
+                    <IoIosHeartEmpty style={{position: 'absolute', top: '40px' }} />
+                    <TextField
+                      id='bloodPressureInput'
+                      name='bloodPressure'
+                      floatingLabelText="Blood Pressure"
+                      hintText='120 / 80'
+                      value={this.data.state.bloodPressure}
+                      onChange={this.changePost.bind(this, 'bloodPressure')}
+                      floatingLabelStyle={{marginLeft: '20px'}}
+                      inputStyle={{marginLeft: '20px'}}
+                      hintStyle={{marginLeft: '20px'}}
+                      fullWidth
+                      /><br/>
+                  </Col>
+                </Row>
+              </Tab>
+              <Tab className="noteTab" label='Notes' style={this.data.style.tab} value={1}>
+                <Row style={{minHeight: '200px'}} >
+                  <CardText>
+                    <TextField
+                      id='notesInput'
+                      ref='notesContent'
+                      name='notesContent'
+                      floatingLabelText="New clinical impression..."
+                      value={this.data.state.notes}
+                      onChange={this.changePost.bind(this, 'notes')}
+                      multiLine={true}
+                      rows={4}
+                      floatingLabelFixed={true}
+                      fullWidth
+                      /><br/>
+                  </CardText>
+                </Row>
+              </Tab>
+              <Tab className="biomarkersTab" label='Biomarkers' onActive={this.handleActive} style={this.data.style.tab} value={2}>
+                <Row style={{minHeight: '200px'}} >
+                </Row>
+              </Tab>
+              <Tab className="medicationsTab" label='Medications' onActive={this.handleActive} style={this.data.style.tab} value={3}>
+                <Row style={{minHeight: '200px'}} >
+                </Row>
+              </Tab>
+            </Tabs>
 
           <RaisedButton id="addObservationButton" onMouseUp={ this.handleInsertObservations.bind(this) } primary={true} label='New Observation' />
         </CardText>
