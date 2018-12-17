@@ -342,7 +342,8 @@ ObservationsTable.propTypes = {
   showSubjects: PropTypes.bool,
   showDevices: PropTypes.bool,
   showValueString: PropTypes.bool,
-  showComparator: PropTypes.bool
+  showComparator: PropTypes.bool,
+  multiline: PropTypes.bool
 };
 
 ReactMixin(ObservationsTable.prototype, ReactMeteorData);

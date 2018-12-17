@@ -87,15 +87,14 @@ export class ObservationsPage extends React.Component {
     // });
   }
   onInsert(observationId){
-    HipaaLogger.logEvent({eventType: "create", userId: Meteor.userId(), userName: Meteor.user().fullName(), collectionName: "Observations", recordId: observationId});
     Session.set('selectedObservationId', false);
     Session.set('observationPageTabIndex', 1);
-
+    HipaaLogger.logEvent({eventType: "create", userId: Meteor.userId(), userName: Meteor.user().fullName(), collectionName: "Observations", recordId: observationId});
   }
   onUpdate(observationId){
-    HipaaLogger.logEvent({eventType: "update", userId: Meteor.userId(), userName: Meteor.user().fullName(), collectionName: "Observations", recordId: observationId});
     Session.set('selectedObservationId', false);
     Session.set('observationPageTabIndex', 1);
+    HipaaLogger.logEvent({eventType: "update", userId: Meteor.userId(), userName: Meteor.user().fullName(), collectionName: "Observations", recordId: observationId});
   }
   onRemove(observationId){
     Session.set('observationPageTabIndex', 1);
@@ -120,12 +119,18 @@ export class ObservationsPage extends React.Component {
                   displayDatePicker={true} 
                   displayBarcodes={false}
                   showHints={true}
+                  onInsert={ this.onInsert }
                   observation={ this.data.selectedObservation }
                   observationId={ this.data.currentObservationId } 
                   />
               </Tab>
               <Tab className="observationListTab" label='Observations' onActive={this.handleActive} style={this.data.style.tab} value={1}>
-                <ObservationsTable displayBarcodes={false} />
+                <ObservationsTable 
+                  displayBarcodes={false} 
+                  multiline={false}
+                  showSubjects={false}
+                  showDevices={false}
+                  />
               </Tab>
               <Tab className="observationDetailsTab" label='Detail' onActive={this.handleActive} style={this.data.style.tab} value={2}>
                 <ObservationDetail 

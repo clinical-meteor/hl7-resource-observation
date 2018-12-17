@@ -452,13 +452,13 @@ export class ObservationDetail extends React.Component {
         set(observationData, 'status', textValue)
         break;    
       case "loincCode":
-        set(formData, 'code.coding[0].code', textValue)
+        set(observationData, 'code.coding[0].code', textValue)
         break;
       case "loincCodeText":
-        set(formData, 'code.text', textValue)
+        set(observationData, 'code.text', textValue)
         break;
       case "loincCodeDisplay":
-        set(formData, 'code.coding[0].display', textValue)
+        set(observationData, 'code.coding[0].display', textValue)
         break;
     }
     return observationData;
@@ -512,8 +512,8 @@ export class ObservationDetail extends React.Component {
           Bert.alert(error.reason, 'danger');
         }
         if (result) {
-          if(this.props.onUpdate){
-            this.props.onUpdate(self.data.observationId);
+          if(self.props.onUpdate){
+            self.props.onUpdate(self.data.observationId);
           }
           Bert.alert('Observation added!', 'success');
         }
@@ -529,8 +529,8 @@ export class ObservationDetail extends React.Component {
           Bert.alert(error.reason, 'danger');
         }
         if (result) {
-          if(this.props.onInsert){
-            this.props.onInsert(self.data.observationId);
+          if(self.props.onInsert){
+            self.props.onInsert(self.data.observationId);
           }
           Bert.alert('Observation added!', 'success');
         }
