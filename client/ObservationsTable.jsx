@@ -22,6 +22,7 @@ flattenObservation = function(observation){
     category: '',
     code: '',
     valueString: '',
+    value: '',
     observationValue: '',
     subject: '',
     subjectId: '',
@@ -43,12 +44,26 @@ flattenObservation = function(observation){
   result.subjectId = get(observation, 'subject.reference', '');
   result.device = get(observation, 'device.display', '');
   result.status = get(observation, 'status', '');
-  result.effectiveDateTime =  moment(get(observation, 'effectiveDateTime')).format("YYYY-MM-DD hh:ss a");
+  result.effectiveDateTime =  moment(get(observation, 'effectiveDateTime')).format("YYYY-MM-DD hh a");
 
   result.meta = get(observation, 'category.text', '');
 
+  if(result.valueString.length > 0){
+    result.value = result.valueString;
+  } else {
+    result.value = result.comparator + ' ' + result.observationValue + ' ' + result.unit;
+  }
+
+
+
+
   return result;
 }
+
+
+
+// db.inventory.find( { item: { $not: /^p.*/ } } )  
+
 
 
 export class ObservationsTable extends React.Component {
@@ -79,6 +94,7 @@ export class ObservationsTable extends React.Component {
       if(this.props.query){
         query = this.props.query
       }
+
       data.observations = Observations.find(query).map(function(observation){
         return flattenObservation(observation);
       });
@@ -171,6 +187,37 @@ export class ObservationsTable extends React.Component {
     }
   }
 
+  renderValue(valueString){
+    if (this.props.showvalueString) {
+      return (
+        <td className='value'>{ valueString }</td>
+      );
+    }
+  }
+  renderValueHeader(){
+    if (this.props.showValueString) {
+      return (
+        <th className='value'>Value</th>
+      );
+    }
+  }
+
+  renderCodeHeader(){
+    if (this.props.multiline === false) {
+      return (
+        <th className='code'>Code</th>
+      );
+    }
+  }
+
+  renderCategoryHeader(){
+    if (this.props.multiline === false) {
+      return (
+        <th className='category'>Category</th>
+      );
+    }
+  }
+
 
   renderValueString(valueString){
     if (this.props.showValueString) {
@@ -204,28 +251,58 @@ export class ObservationsTable extends React.Component {
   render () {
     let tableRows = [];
     for (var i = 0; i < this.data.observations.length; i++) {
-      tableRows.push(
-        <tr className="observationRow" key={i} style={this.data.style.text} onClick={ this.rowClick.bind(this, this.data.observations[i]._id)} >
+      if(this.props.multiline){
+        tableRows.push(
+          <tr className="observationRow" key={i} style={this.data.style.text} onClick={ this.rowClick.bind(this, this.data.observations[i]._id)} >
+            <td className='meta' style={ this.displayOnMobile('100px')} >
+              <FaLock style={{marginLeft: '2px', marginRight: '2px'}} />
+              <FaTags style={{marginLeft: '2px', marginRight: '2px'}} />
+              <FaCode style={{marginLeft: '2px', marginRight: '2px'}} />
+              <FaPuzzlePiece style={{marginLeft: '2px', marginRight: '2px'}} />
+            </td>
+            {/* <td className='category'>{this.data.observations[i].category }</td> */}
+            <td className='code'>
+              <b>{this.data.observations[i].code }</b> <br />
+              {this.data.observations[i].value }
+              </td>
+            {/* {this.renderComparator(this.data.observations[i].comparator)}
+            {this.renderValueString(this.data.observations[i].observationValue)} */}
+            {this.renderValue(this.data.observations[i].observationValue)}
+            {/* <td className='unit'>{this.data.observations[i].unit }</td> */}
+            {this.renderSubject(this.data.observations[i].subject)}
+            <td className='status' style={ this.displayOnMobile()} >{this.data.observations[i].status }</td>
+            {this.renderDevice(this.data.observations[i].device)}
+            <td className='date' style={{minWidth: '140px'}}>{this.data.observations[i].effectiveDateTime }</td>
+            {this.renderBarcode(this.data.observations[i]._id)}
+          </tr>
+        );    
 
-          <td className='meta' style={ this.displayOnMobile('100px')} >
-            <FaLock style={{marginLeft: '2px', marginRight: '2px'}} />
-            <FaTags style={{marginLeft: '2px', marginRight: '2px'}} />
-            <FaCode style={{marginLeft: '2px', marginRight: '2px'}} />
-            <FaPuzzlePiece style={{marginLeft: '2px', marginRight: '2px'}} />
-          </td>
-          <td className='category'>{this.data.observations[i].category }</td>
-          <td className='code'>{this.data.observations[i].code }</td>
-          {this.renderComparator(this.data.observations[i].comparator)}
-          {this.renderValueString(this.data.observations[i].observationValue)}
-          <td className='unit'>{this.data.observations[i].unit }</td>
-          {this.renderSubject(this.data.observations[i].subject)}
-          <td className='status' style={ this.displayOnMobile()} >{this.data.observations[i].status }</td>
-          {this.renderDevice(this.data.observations[i].device)}
-          <td className='date'>{this.data.observations[i].effectiveDateTime }</td>
-          {this.renderBarcode(this.data.observations[i]._id)}
-        </tr>
-      );
+      } else {
+        tableRows.push(
+          <tr className="observationRow" key={i} style={this.data.style.text} onClick={ this.rowClick.bind(this, this.data.observations[i]._id)} >
+  
+            <td className='meta' style={ this.displayOnMobile('100px')} >
+              <FaLock style={{marginLeft: '2px', marginRight: '2px'}} />
+              <FaTags style={{marginLeft: '2px', marginRight: '2px'}} />
+              <FaCode style={{marginLeft: '2px', marginRight: '2px'}} />
+              <FaPuzzlePiece style={{marginLeft: '2px', marginRight: '2px'}} />
+            </td>
+            <td className='category'>{this.data.observations[i].category }</td>
+            <td className='code'>{this.data.observations[i].code }</td>
+            {/* {this.renderComparator(this.data.observations[i].comparator)}
+            {this.renderValueString(this.data.observations[i].observationValue)} */}
+            {this.renderValue(this.data.observations[i].observationValue)}
+            {/* <td className='unit'>{this.data.observations[i].unit }</td> */}
+            {this.renderSubject(this.data.observations[i].subject)}
+            <td className='status' style={ this.displayOnMobile()} >{this.data.observations[i].status }</td>
+            {this.renderDevice(this.data.observations[i].device)}
+            <td className='date' style={{minWidth: '140px'}}>{this.data.observations[i].effectiveDateTime }</td>
+            {this.renderBarcode(this.data.observations[i]._id)}
+          </tr>
+        );    
+      }
     }
+
 
     return(
       <CardText>
@@ -233,15 +310,18 @@ export class ObservationsTable extends React.Component {
           <thead>
             <tr>
               <th className='meta' style={ this.displayOnMobile('100px')}>Meta</th>
-              <th className='category'>Category</th>
-              <th className='code'>Code</th>
-              {this.renderComparatorHeader() }
-              {this.renderValueStringHeader() }
-              <th className='unit'>Unit</th>
+              {/* <th className='category'>Category</th>
+              <th className='code'>Code</th> */}
+              {this.renderCategoryHeader() }
+              {this.renderCodeHeader() }
+              {/* {this.renderComparatorHeader() }
+              {this.renderValueStringHeader() } */}
+              {this.renderValueHeader() }
+              {/* <th className='unit'>Unit</th> */}
               {this.renderSubjectHeader() }
               <th className='status' style={ this.displayOnMobile()} >Status</th>
               {this.renderDeviceHeader() }
-              <th className='date'>Date</th>
+              <th className='date' style={{minWidth: '140px'}}>Date</th>
               {this.renderBarcodeHeader() }
             </tr>
           </thead>
