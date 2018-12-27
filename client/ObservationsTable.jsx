@@ -281,12 +281,12 @@ export class ObservationsTable extends React.Component {
         tableRows.push(
           <tr className="observationRow" key={i} style={this.data.style.text} onClick={ this.rowClick.bind(this, this.data.observations[i]._id)} >
   
-            <td className='meta' style={ this.displayOnMobile('100px')} >
+            {/* <td className='meta' style={ this.displayOnMobile('100px')} >
               <FaLock style={{marginLeft: '2px', marginRight: '2px'}} />
               <FaTags style={{marginLeft: '2px', marginRight: '2px'}} />
               <FaCode style={{marginLeft: '2px', marginRight: '2px'}} />
               <FaPuzzlePiece style={{marginLeft: '2px', marginRight: '2px'}} />
-            </td>
+            </td> */}
             <td className='category'>{this.data.observations[i].category }</td>
             <td className='code'>{this.data.observations[i].code }</td>
             {/* {this.renderComparator(this.data.observations[i].comparator)}
@@ -309,7 +309,7 @@ export class ObservationsTable extends React.Component {
         <Table id="observationsTable" hover >
           <thead>
             <tr>
-              <th className='meta' style={ this.displayOnMobile('100px')}>Meta</th>
+              {/* <th className='meta' style={ this.displayOnMobile('100px')}>Meta</th> */}
               {/* <th className='category'>Category</th>
               <th className='code'>Code</th> */}
               {this.renderCategoryHeader() }

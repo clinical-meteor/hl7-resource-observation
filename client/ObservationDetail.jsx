@@ -14,6 +14,7 @@ import PropTypes from 'prop-types';
 import { Meteor } from 'meteor/meteor';
 
 import { get, set } from 'lodash';
+// import { setFlagsFromString } from 'v8';
 
 
 
@@ -512,8 +513,8 @@ export class ObservationDetail extends React.Component {
           Bert.alert(error.reason, 'danger');
         }
         if (result) {
-          if(self.props.onUpdate){
-            self.props.onUpdate(self.data.observationId);
+          if(setFlagsFromString.props.onUpdate){
+            setFlagsFromString.props.onUpdate(self.data.observationId);
           }
           Bert.alert('Observation added!', 'success');
         }
