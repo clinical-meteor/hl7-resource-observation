@@ -30,6 +30,7 @@ flattenObservation = function(observation){
     device: '',
     createdBy: '',
     effectiveDateTime: '',
+    issued: '',
     unit: ''
   };
 
@@ -44,7 +45,15 @@ flattenObservation = function(observation){
   result.subjectId = get(observation, 'subject.reference', '');
   result.device = get(observation, 'device.display', '');
   result.status = get(observation, 'status', '');
-  result.effectiveDateTime =  moment(get(observation, 'effectiveDateTime')).format("YYYY-MM-DD hh a");
+  
+  if(get(observation, 'effectiveDateTime')){
+    result.effectiveDateTime =  moment(get(observation, 'effectiveDateTime')).format("YYYY-MM-DD hh a");
+  }
+  if(get(observation, 'issued')){
+    result.effectiveDateTime =  moment(get(observation, 'issued')).format("YYYY-MM-DD hh a");    
+  }
+
+
 
   result.meta = get(observation, 'category.text', '');
 
@@ -254,12 +263,12 @@ export class ObservationsTable extends React.Component {
       if(this.props.multiline){
         tableRows.push(
           <tr className="observationRow" key={i} style={this.data.style.text} onClick={ this.rowClick.bind(this, this.data.observations[i]._id)} >
-            <td className='meta' style={ this.displayOnMobile('100px')} >
+            {/* <td className='meta' style={ this.displayOnMobile('100px')} >
               <FaLock style={{marginLeft: '2px', marginRight: '2px'}} />
               <FaTags style={{marginLeft: '2px', marginRight: '2px'}} />
               <FaCode style={{marginLeft: '2px', marginRight: '2px'}} />
               <FaPuzzlePiece style={{marginLeft: '2px', marginRight: '2px'}} />
-            </td>
+            </td> */}
             {/* <td className='category'>{this.data.observations[i].category }</td> */}
             <td className='code'>
               <b>{this.data.observations[i].code }</b> <br />
