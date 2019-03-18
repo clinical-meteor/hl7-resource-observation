@@ -3,7 +3,7 @@ import ReactMixin from 'react-mixin';
 import { ReactMeteorData } from 'meteor/react-meteor-data';
 import PropTypes from 'prop-types';
 
-import { Card, CardMedia, CardTitle, CardText, CardActions } from 'material-ui/Card';
+import { Card, CardMedia, CardTitle, CardText, CardActions, Toggle } from 'material-ui';
 import { Meteor } from 'meteor/meteor';
 import { Session } from 'meteor/session';
 
@@ -13,7 +13,6 @@ import { GlassCard, VerticalCanvas, Glass, DynamicSpacer } from 'meteor/clinical
 import { get } from 'lodash';
 
 import { FaTags, FaCode, FaPuzzlePiece, FaLock  } from 'react-icons/fa';
-
 
 flattenObservation = function(observation){
   let result = {
@@ -102,6 +101,11 @@ export class ObservationsTable extends React.Component {
       let query = {};
       if(this.props.query){
         query = this.props.query
+      }
+      if(this.props.hideEnteredInError){
+        query['verificationStatus'] = {
+          $nin: ['entered-in-error']  // unconfirmed | provisional | differential | confirmed | refuted | entered-in-error
+        }
       }
 
       data.observations = Observations.find(query).map(function(observation){
@@ -256,20 +260,52 @@ export class ObservationsTable extends React.Component {
         );
     }
   }
-  
+  renderToggleHeader(){
+    if (!this.props.hideToggle) {
+      return (
+        <th className="toggle">Toggle</th>
+      );
+    }
+  }
+  renderToggle(){
+    if (!this.props.hideToggle) {
+      return (
+        <td className="toggle" style={{width: '60px'}}>
+            <Toggle
+              defaultToggled={true}
+            />
+          </td>
+      );
+    }
+  }
+  renderActionIconsHeader(){
+    if (!this.props.hideActionIcons) {
+      return (
+        <th className='actionIcons' style={{minWidth: '120px'}}>Actions</th>
+      );
+    }
+  }
+  renderActionIcons(actionIcons ){
+    if (!this.props.hideActionIcons) {
+      return (
+        <td className='actionIcons' style={{minWidth: '120px'}}>
+          <FaLock style={{marginLeft: '2px', marginRight: '2px'}} />
+          <FaTags style={{marginLeft: '2px', marginRight: '2px'}} />
+          <FaCode style={{marginLeft: '2px', marginRight: '2px'}} />
+          <FaPuzzlePiece style={{marginLeft: '2px', marginRight: '2px'}} />          
+        </td>
+      );
+    }
+  } 
   render () {
     let tableRows = [];
     for (var i = 0; i < this.data.observations.length; i++) {
       if(this.props.multiline){
         tableRows.push(
           <tr className="observationRow" key={i} style={this.data.style.text} onClick={ this.rowClick.bind(this, this.data.observations[i]._id)} >
-            {/* <td className='meta' style={ this.displayOnMobile('100px')} >
-              <FaLock style={{marginLeft: '2px', marginRight: '2px'}} />
-              <FaTags style={{marginLeft: '2px', marginRight: '2px'}} />
-              <FaCode style={{marginLeft: '2px', marginRight: '2px'}} />
-              <FaPuzzlePiece style={{marginLeft: '2px', marginRight: '2px'}} />
-            </td> */}
             {/* <td className='category'>{this.data.observations[i].category }</td> */}
+            { this.renderToggle() }
+            { this.renderActionIcons() }
             <td className='code'>
               <b>{this.data.observations[i].code }</b> <br />
               {this.data.observations[i].value }
@@ -288,14 +324,9 @@ export class ObservationsTable extends React.Component {
 
       } else {
         tableRows.push(
-          <tr className="observationRow" key={i} style={this.data.style.text} onClick={ this.rowClick.bind(this, this.data.observations[i]._id)} >
-  
-            {/* <td className='meta' style={ this.displayOnMobile('100px')} >
-              <FaLock style={{marginLeft: '2px', marginRight: '2px'}} />
-              <FaTags style={{marginLeft: '2px', marginRight: '2px'}} />
-              <FaCode style={{marginLeft: '2px', marginRight: '2px'}} />
-              <FaPuzzlePiece style={{marginLeft: '2px', marginRight: '2px'}} />
-            </td> */}
+          <tr className="observationRow" key={i} style={this.data.style.text} onClick={ this.rowClick.bind(this, this.data.observations[i]._id)} >            
+            { this.renderToggle() }
+            { this.renderActionIcons() }
             <td className='category'>{this.data.observations[i].category }</td>
             <td className='code'>{this.data.observations[i].code }</td>
             {/* {this.renderComparator(this.data.observations[i].comparator)}
@@ -321,6 +352,9 @@ export class ObservationsTable extends React.Component {
               {/* <th className='meta' style={ this.displayOnMobile('100px')}>Meta</th> */}
               {/* <th className='category'>Category</th>
               <th className='code'>Code</th> */}
+
+              { this.renderToggleHeader() }
+              { this.renderActionIconsHeader() }
               {this.renderCategoryHeader() }
               {this.renderCodeHeader() }
               {/* {this.renderComparatorHeader() }
@@ -352,6 +386,9 @@ ObservationsTable.propTypes = {
   showDevices: PropTypes.bool,
   showValueString: PropTypes.bool,
   showComparator: PropTypes.bool,
+  hideToggle: PropTypes.bool,
+  hideActionIcons: PropTypes.bool,
+  enteredInError: PropTypes.bool,
   multiline: PropTypes.bool
 };
 
