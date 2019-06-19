@@ -1,18 +1,38 @@
 import React from 'react';
-import ReactMixin from 'react-mixin';
-import { ReactMeteorData } from 'meteor/react-meteor-data';
 import PropTypes from 'prop-types';
 
-import { Card, CardMedia, CardTitle, CardText, CardActions, Toggle } from 'material-ui';
-import { Meteor } from 'meteor/meteor';
-import { Session } from 'meteor/session';
-
+import { CardText, Checkbox } from 'material-ui';
 import { Table } from 'react-bootstrap';
 
-import { GlassCard, VerticalCanvas, Glass, DynamicSpacer } from 'meteor/clinical:glass-ui';
-import { get } from 'lodash';
+// import ReactMixin from 'react-mixin';
+// import { ReactMeteorData } from 'meteor/react-meteor-data';
+// import { Session } from 'meteor/session';
+// import { GlassCard, VerticalCanvas, Glass, DynamicSpacer } from 'meteor/clinical:glass-ui';
+
+import moment from 'moment-es6'
+import _ from 'lodash';
+let get = _.get;
+let set = _.set;
 
 import { FaTags, FaCode, FaPuzzlePiece, FaLock  } from 'react-icons/fa';
+import { GoTrashcan } from 'react-icons/go'
+
+let styles = {
+  hideOnPhone: {
+    visibility: 'visible',
+    display: 'table'
+  },
+  cellHideOnPhone: {
+    visibility: 'visible',
+    display: 'table',
+    paddingTop: '16px',
+    maxWidth: '120px'
+  },
+  cell: {
+    paddingTop: '16px'
+  }
+}
+
 
 flattenObservation = function(observation){
   let result = {
@@ -52,8 +72,6 @@ flattenObservation = function(observation){
     result.effectiveDateTime =  moment(get(observation, 'issued')).format("YYYY-MM-DD hh a");    
   }
 
-
-
   result.meta = get(observation, 'category.text', '');
 
   if(result.valueString.length > 0){
@@ -62,20 +80,20 @@ flattenObservation = function(observation){
     result.value = result.comparator + ' ' + result.observationValue + ' ' + result.unit;
   }
 
-
-
-
   return result;
 }
 
 
 
-// db.inventory.find( { item: { $not: /^p.*/ } } )  
-
-
 
 export class ObservationsTable extends React.Component {
-
+  constructor(props) {
+    super(props);
+    this.state = {
+      selected: [],
+      observations: []
+    }
+  }
   getMeteorData() {
 
     // this should all be handled by props
@@ -113,17 +131,16 @@ export class ObservationsTable extends React.Component {
       });
     }
 
+    // // this could be another mixin
+    // if (Session.get('glassBlurEnabled')) {
+    //   data.style.filter = "blur(3px)";
+    //   data.style.WebkitFilter = "blur(3px)";
+    // }
 
-    // this could be another mixin
-    if (Session.get('glassBlurEnabled')) {
-      data.style.filter = "blur(3px)";
-      data.style.WebkitFilter = "blur(3px)";
-    }
-
-    // this could be another mixin
-    if (Session.get('backgroundBlurEnabled')) {
-      data.style.backdropFilter = "blur(5px)";
-    }
+    // // this could be another mixin
+    // if (Session.get('backgroundBlurEnabled')) {
+    //   data.style.backdropFilter = "blur(5px)";
+    // }
 
     if(process.env.NODE_ENV === "test") console.log("ObservationsTable[data]", data);
     return data;
@@ -156,6 +173,53 @@ export class ObservationsTable extends React.Component {
     Session.set("selectedObservationId", id);
     Session.set('observationPageTabIndex', 2);
     Session.set('observationDetailState', false);
+  }
+  renderActionIconsHeader(){
+    if (!this.props.hideActionIcons) {
+      return (
+        <th className='actionIcons' style={{width: '100px'}}>Actions</th>
+      );
+    }
+  }
+  renderActionIcons(observation ){
+    if (!this.props.hideActionIcons) {
+      let iconStyle = {
+        marginLeft: '4px', 
+        marginRight: '4px', 
+        marginTop: '4px', 
+        fontSize: '120%'
+      }
+
+      return (
+        <td className='actionIcons' style={{minWidth: '120px'}}>
+          <FaTags style={iconStyle} onClick={this.onMetaClick.bind(this, observation)} />
+          <GoTrashcan style={iconStyle} onClick={this.removeRecord.bind(this, observation._id)} />  
+        </td>
+      );
+    }
+  } 
+  removeRecord(_id){
+    console.log('Remove observation ', _id)
+    if(this.props.onRemoveRecord){
+      this.props.onRemoveRecord(_id);
+    }
+  }
+  onActionButtonClick(id){
+    if(typeof this.props.onActionButtonClick === "function"){
+      this.props.onActionButtonClick(id);
+    }
+  }
+  cellClick(id){
+    if(typeof this.props.onCellClick === "function"){
+      this.props.onCellClick(id);
+    }
+  }
+
+  onMetaClick(patient){
+    let self = this;
+    if(this.props.onMetaClick){
+      this.props.onMetaClick(self, patient);
+    }
   }
   renderBarcode(id){
     if (this.props.displayBarcodes) {
@@ -216,13 +280,19 @@ export class ObservationsTable extends React.Component {
   }
 
   renderCodeHeader(){
-    if (this.props.multiline === false) {
+    if (!this.props.hideCode) {
       return (
         <th className='code'>Code</th>
       );
     }
   }
-
+  renderCode(code){
+    if (!this.props.hideCode) {
+      return (
+        <td className='category'>{ code }</td>
+      );
+    }
+  }
   renderCategoryHeader(){
     if (this.props.multiline === false) {
       return (
@@ -230,7 +300,13 @@ export class ObservationsTable extends React.Component {
       );
     }
   }
-
+  renderCategory(category){
+    if (this.props.multiline === false) {
+      return (
+        <td className='category'>{ category }</td>
+      );
+    }
+  }
 
   renderValueString(valueString){
     if (this.props.showValueString) {
@@ -261,85 +337,99 @@ export class ObservationsTable extends React.Component {
     }
   }
   renderToggleHeader(){
-    if (!this.props.hideToggle) {
+    if (!this.props.hideCheckboxes) {
       return (
         <th className="toggle" style={{width: '60px'}} >Toggle</th>
       );
     }
   }
   renderToggle(){
-    if (!this.props.hideToggle) {
+    if (!this.props.hideCheckboxes) {
       return (
         <td className="toggle" style={{width: '60px'}}>
-            <Toggle
-              defaultToggled={true}
+            <Checkbox
+              defaultChecked={true}
             />
           </td>
       );
     }
   }
-  renderActionIconsHeader(){
-    if (!this.props.hideActionIcons) {
-      return (
-        <th className='actionIcons' style={{minWidth: '120px'}}>Actions</th>
-      );
-    }
-  }
-  renderActionIcons(actionIcons ){
-    if (!this.props.hideActionIcons) {
-      return (
-        <td className='actionIcons' style={{minWidth: '120px'}}>
-          <FaLock style={{marginLeft: '2px', marginRight: '2px'}} />
-          <FaTags style={{marginLeft: '2px', marginRight: '2px'}} />
-          <FaCode style={{marginLeft: '2px', marginRight: '2px'}} />
-          <FaPuzzlePiece style={{marginLeft: '2px', marginRight: '2px'}} />          
-        </td>
-      );
-    }
-  } 
+
   render () {
     let tableRows = [];
-    for (var i = 0; i < this.data.observations.length; i++) {
-      if(this.props.multiline){
-        tableRows.push(
-          <tr className="observationRow" key={i} style={this.data.style.text} onClick={ this.rowClick.bind(this, this.data.observations[i]._id)} >
-            {/* <td className='category'>{this.data.observations[i].category }</td> */}
-            { this.renderToggle() }
-            { this.renderActionIcons() }
-            <td className='code'>
-              <b>{this.data.observations[i].code }</b> <br />
-              {this.data.observations[i].value }
-              </td>
-            {/* {this.renderComparator(this.data.observations[i].comparator)}
-            {this.renderValueString(this.data.observations[i].observationValue)} */}
-            {this.renderValue(this.data.observations[i].observationValue)}
-            {/* <td className='unit'>{this.data.observations[i].unit }</td> */}
-            {this.renderSubject(this.data.observations[i].subject)}
-            <td className='status' style={ this.displayOnMobile()} >{this.data.observations[i].status }</td>
-            {this.renderDevice(this.data.observations[i].device)}
-            <td className='date' style={{minWidth: '140px'}}>{this.data.observations[i].effectiveDateTime }</td>
-            {this.renderBarcode(this.data.observations[i]._id)}
-          </tr>
-        );    
+    let footer;
 
+    if(this.props.appWidth){
+      if (this.props.appWidth < 768) {
+        styles.hideOnPhone.visibility = 'hidden';
+        styles.hideOnPhone.display = 'none';
+        styles.cellHideOnPhone.visibility = 'hidden';
+        styles.cellHideOnPhone.display = 'none';
       } else {
-        tableRows.push(
-          <tr className="observationRow" key={i} style={this.data.style.text} onClick={ this.rowClick.bind(this, this.data.observations[i]._id)} >            
-            { this.renderToggle() }
-            { this.renderActionIcons() }
-            <td className='category'>{this.data.observations[i].category }</td>
-            <td className='code'>{this.data.observations[i].code }</td>
-            {/* {this.renderComparator(this.data.observations[i].comparator)}
-            {this.renderValueString(this.data.observations[i].observationValue)} */}
-            {this.renderValue(this.data.observations[i].observationValue)}
-            {/* <td className='unit'>{this.data.observations[i].unit }</td> */}
-            {this.renderSubject(this.data.observations[i].subject)}
-            <td className='status' style={ this.displayOnMobile()} >{this.data.observations[i].status }</td>
-            {this.renderDevice(this.data.observations[i].device)}
-            <td className='date' style={{minWidth: '140px'}}>{this.data.observations[i].effectiveDateTime }</td>
-            {this.renderBarcode(this.data.observations[i]._id)}
-          </tr>
-        );    
+        styles.hideOnPhone.visibility = 'visible';
+        styles.hideOnPhone.display = 'table-cell';
+        styles.cellHideOnPhone.visibility = 'visible';
+        styles.cellHideOnPhone.display = 'table-cell';
+      }  
+    }
+
+    let observationsToRender = [];
+    if(this.props.observations){
+      if(this.props.observations.length > 0){              
+        this.props.observations.forEach(function(observation){
+          observationsToRender.push(flattenObservation(observation));
+        });  
+      }
+    }
+
+    if(observationsToRender.length === 0){
+      console.log('No observations to render');
+      // footer = <TableNoData noDataPadding={ this.props.noDataMessagePadding } />
+    } else {
+      for (var i = 0; i < observationsToRender.length; i++) {
+        if(this.props.multiline){
+          tableRows.push(
+            <tr className="observationRow" key={i} onClick={ this.rowClick.bind(this, observationsToRender[i]._id)} >
+              {/* <td className='category'>{observationsToRender[i].category }</td> */}
+              { this.renderToggle() }
+              { this.renderActionIcons(observationsToRender[i]) }
+              { this.renderCategory(observationsToRender[i].category) }
+              <td className='code'>
+                <span style={{fontWeight: 400}}>{observationsToRender[i].code }</span> <br />
+                {observationsToRender[i].value }
+                </td>
+              {/* {this.renderComparator(observationsToRender[i].comparator)}
+              {this.renderValueString(observationsToRender[i].observationValue)} */}
+              {this.renderValue(observationsToRender[i].observationValue)}
+              {/* <td className='unit'>{observationsToRender[i].unit }</td> */}
+              {this.renderSubject(observationsToRender[i].subject)}
+              <td className='status' >{observationsToRender[i].status }</td>
+              {this.renderDevice(observationsToRender[i].device)}
+              <td className='date' style={{minWidth: '140px'}}>{observationsToRender[i].effectiveDateTime }</td>
+              {this.renderBarcode(observationsToRender[i]._id)}
+            </tr>
+          );    
+  
+        } else {
+          tableRows.push(
+            <tr className="observationRow" key={i} onClick={ this.rowClick.bind(this, observationsToRender[i]._id)} >            
+              { this.renderToggle() }
+              { this.renderActionIcons(observationsToRender[i]) }
+              { this.renderCategory(observationsToRender[i].category) }
+              { this.renderCode(observationsToRender[i].code) }
+              {/* <td className='code'>{observationsToRender[i].code }</td> */}
+              {/* {this.renderComparator(observationsToRender[i].comparator)}
+              {this.renderValueString(observationsToRender[i].observationValue)} */}
+              {this.renderValue(observationsToRender[i].observationValue)}
+              {/* <td className='unit'>{observationsToRender[i].unit }</td> */}
+              {this.renderSubject(observationsToRender[i].subject)}
+              <td className='status' >{observationsToRender[i].status }</td>
+              {this.renderDevice(observationsToRender[i].device)}
+              <td className='date' style={{minWidth: '140px'}}>{observationsToRender[i].effectiveDateTime }</td>
+              {this.renderBarcode(observationsToRender[i]._id)}
+            </tr>
+          );    
+        }
       }
     }
 
@@ -349,10 +439,6 @@ export class ObservationsTable extends React.Component {
         <Table id="observationsTable" hover >
           <thead>
             <tr>
-              {/* <th className='meta' style={ this.displayOnMobile('100px')}>Meta</th> */}
-              {/* <th className='category'>Category</th>
-              <th className='code'>Code</th> */}
-
               { this.renderToggleHeader() }
               { this.renderActionIconsHeader() }
               {this.renderCategoryHeader() }
@@ -362,7 +448,7 @@ export class ObservationsTable extends React.Component {
               {this.renderValueHeader() }
               {/* <th className='unit'>Unit</th> */}
               {this.renderSubjectHeader() }
-              <th className='status' style={ this.displayOnMobile()} >Status</th>
+              <th className='status'>Status</th>
               {this.renderDeviceHeader() }
               <th className='date' style={{minWidth: '140px'}}>Date</th>
               {this.renderBarcodeHeader() }
@@ -379,18 +465,25 @@ export class ObservationsTable extends React.Component {
 
 ObservationsTable.propTypes = {
   barcodes: PropTypes.bool,
-  data: PropTypes.array,
+  observations: PropTypes.array,
   query: PropTypes.object,
   paginationLimit: PropTypes.number,
+  hideCode: PropTypes.bool,
   showSubjects: PropTypes.bool,
   showDevices: PropTypes.bool,
   showValueString: PropTypes.bool,
   showComparator: PropTypes.bool,
-  hideToggle: PropTypes.bool,
+  hideCheckboxes: PropTypes.bool,
   hideActionIcons: PropTypes.bool,
   enteredInError: PropTypes.bool,
-  multiline: PropTypes.bool
+  multiline: PropTypes.bool,
+  onCellClick: PropTypes.func,
+  onRowClick: PropTypes.func,
+  onMetaClick: PropTypes.func,
+  onRemoveRecord: PropTypes.func,
+  onActionButtonClick: PropTypes.func,
+  actionButtonLabel: PropTypes.string
 };
 
-ReactMixin(ObservationsTable.prototype, ReactMeteorData);
+
 export default ObservationsTable; 

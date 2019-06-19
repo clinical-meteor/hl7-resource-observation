@@ -30,22 +30,36 @@ export class ObservationsPage extends React.Component {
       },
       tabIndex: Session.get('observationPageTabIndex'),
       observationSearchFilter: Session.get('observationSearchFilter'),
-      currentObservationId: Session.get('selectedObservationId'),
       fhirVersion: Session.get('fhirVersion'),
-      selectedObservation: false
+      selectedObservationId: Session.get("selectedObservationId"),
+      paginationLimit: 100,
+      selectedObservation: false,
+      selected: [],
+      observations: []
     };
+
+    // number of items in the table should be set globally
+    if (get(Meteor, 'settings.public.defaults.paginationLimit')) {
+      data.paginationLimit = get(Meteor, 'settings.public.defaults.paginationLimit');
+    }
 
     if (Session.get('selectedObservationId')){
       data.selectedObservation = Observations.findOne({_id: Session.get('selectedObservationId')});
+      this.state.observation = Observations.findOne({_id: Session.get('selectedObservationId')});
+      this.state.observationId = Session.get('selectedObservationId');
     } else {
       data.selectedObservation = false;
+      this.state.observationId = false;
+      this.state.observation = {}
     }
+
+    data.patients = Observations.find().fetch();
 
     data.style = Glass.blur(data.style);
     data.style.appbar = Glass.darkroom(data.style.appbar);
     data.style.tab = Glass.darkroom(data.style.tab);
 
-    if(process.env.NODE_ENV === "test") console.log("ObservationsPage[data]", data);
+    if(get(Meteor, 'settings.public.logging') === "debug") console.log("ObservationsPage[data]", data);
     return data;
   }
 
@@ -86,6 +100,35 @@ export class ObservationsPage extends React.Component {
     //   }
     // });
   }
+  onTableRowClick(observationId){
+    Session.set('selectedObservationId', observationId);
+    Session.set('selectedPatient', Observations.findOne(observationId));
+  }
+  onTableCellClick(id){
+    Session.set('patientsUpsert', false);
+    Session.set('selectedObservationId', id);
+    Session.set('patientPageTabIndex', 2);
+  }
+  tableActionButtonClick(_id){
+    let patient = Observations.findOne({_id: _id});
+
+    // console.log("ObservationTable.onSend()", patient);
+
+    var httpEndpoint = "http://localhost:8080";
+    if (get(Meteor, 'settings.public.interfaces.default.channel.endpoint')) {
+      httpEndpoint = get(Meteor, 'settings.public.interfaces.default.channel.endpoint');
+    }
+    HTTP.post(httpEndpoint + '/Observation', {
+      data: patient
+    }, function(error, result){
+      if (error) {
+        console.log("error", error);
+      }
+      if (result) {
+        console.log("result", result);
+      }
+    });
+  }
   onInsert(observationId){
     Session.set('selectedObservationId', false);
     Session.set('observationPageTabIndex', 1);
@@ -121,7 +164,7 @@ export class ObservationsPage extends React.Component {
                   showHints={true}
                   onInsert={ this.onInsert }
                   observation={ this.data.selectedObservation }
-                  observationId={ this.data.currentObservationId } 
+                  observationId={ this.data.selectedObservationId } 
                   />
               </Tab>
               <Tab className="observationListTab" label='Observations' onActive={this.handleActive} style={this.data.style.tab} value={1}>
@@ -130,6 +173,17 @@ export class ObservationsPage extends React.Component {
                   multiline={false}
                   showSubjects={false}
                   showDevices={false}
+
+                  noDataMessagePadding={100}
+                  patients={ this.data.observations }
+                  paginationLimit={ this.data.pagnationLimit }
+                  appWidth={ Session.get('appWidth') }
+                  actionButtonLabel="Send"
+                  onRowClick={ this.onTableRowClick }
+                  onCellClick={ this.onTableCellClick }
+                  onActionButtonClick={this.tableActionButtonClick}
+
+
                   />
               </Tab>
               <Tab className="observationDetailsTab" label='Detail' onActive={this.handleActive} style={this.data.style.tab} value={2}>
@@ -138,7 +192,7 @@ export class ObservationsPage extends React.Component {
                   displayDatePicker={true} 
                   displayBarcodes={false}
                   observation={ this.data.selectedObservation }
-                  observationId={ this.data.currentObservationId } 
+                  observationId={ this.data.selectedObservationId } 
                   showPatientInputs={true}
                   showHints={false}
                   onInsert={ this.onInsert }
