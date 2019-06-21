@@ -13,12 +13,21 @@ import ReactMixin  from 'react-mixin';
 import ObservationDetail from './ObservationDetail';
 import ObservationsTable from './ObservationsTable';
 
+import { get } from 'lodash';
+
 Session.setDefault('observationPageTabIndex', 1);
 Session.setDefault('observationSearchFilter', '');
 Session.setDefault('selectedObservationId', false);
 Session.setDefault('fhirVersion', 'v1.0.2');
 
 export class ObservationsPage extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      observationId: false,
+      observation: {}
+    }
+  }
   getMeteorData() {
     let data = {
       style: {
@@ -53,7 +62,7 @@ export class ObservationsPage extends React.Component {
       this.state.observation = {}
     }
 
-    data.patients = Observations.find().fetch();
+    data.observations = Observations.find().fetch();
 
     data.style = Glass.blur(data.style);
     data.style.appbar = Glass.darkroom(data.style.appbar);
@@ -100,26 +109,107 @@ export class ObservationsPage extends React.Component {
     //   }
     // });
   }
+  onCancelUpsertObservation(context){
+    Session.set('observationPageTabIndex', 1);
+  }
+  onDeleteObservation(context){
+    Observations._collection.remove({_id: get(context, 'state.observationId')}, function(error, result){
+      if (error) {
+        if(process.env.NODE_ENV === "test") console.log('Observations.insert[error]', error);
+        Bert.alert(error.reason, 'danger');
+      }
+      if (result) {
+        Session.set('selectedObservationId', false);
+        HipaaLogger.logEvent({eventType: "delete", userId: Meteor.userId(), userName: Meteor.user().fullName(), collectionName: "Observations", recordId: context.state.observationId});
+        Bert.alert('Observation removed!', 'success');
+      }
+    });
+    Session.set('observationPageTabIndex', 1);
+  }
+  onUpsertObservation(context){
+    //if(process.env.NODE_ENV === "test") console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^&&')
+    console.log('Saving a new Observation...', context.state)
+
+    if(get(context, 'state.observation')){
+      let self = context;
+      let fhirObservationData = Object.assign({}, get(context, 'state.observation'));
+  
+      // if(process.env.NODE_ENV === "test") console.log('fhirObservationData', fhirObservationData);
+  
+      let observationValidator = ObservationSchema.newContext();
+      // console.log('observationValidator', observationValidator)
+      observationValidator.validate(fhirObservationData)
+  
+      if(process.env.NODE_ENV === "development"){
+        console.log('IsValid: ', observationValidator.isValid())
+        console.log('ValidationErrors: ', observationValidator.validationErrors());
+  
+      }
+  
+      console.log('Checking context.state again...', context.state)
+      if (get(context, 'state.observationId')) {
+        if(process.env.NODE_ENV === "development") {
+          console.log("Updating observation...");
+        }
+
+        delete fhirObservationData._id;
+  
+        // not sure why we're having to respecify this; fix for a bug elsewhere
+        fhirObservationData.resourceType = 'Observation';
+  
+        Observations._collection.update({_id: get(context, 'state.observationId')}, {$set: fhirObservationData }, function(error, result){
+          if (error) {
+            if(process.env.NODE_ENV === "test") console.log("Observations.insert[error]", error);
+            Bert.alert(error.reason, 'danger');
+          }
+          if (result) {
+            HipaaLogger.logEvent({eventType: "update", userId: Meteor.userId(), userName: Meteor.user().fullName(), collectionName: "Observations", recordId: context.state.observationId});
+            Session.set('selectedObservationId', false);
+            Session.set('observationPageTabIndex', 1);
+            Bert.alert('Observation added!', 'success');
+          }
+        });
+      } else {
+        // if(process.env.NODE_ENV === "test") 
+        console.log("Creating a new observation...", fhirObservationData);
+  
+        fhirObservationData.effectiveDateTime = new Date();
+        Observations._collection.insert(fhirObservationData, function(error, result) {
+          if (error) {
+            if(process.env.NODE_ENV === "test")  console.log('Observations.insert[error]', error);
+            Bert.alert(error.reason, 'danger');
+          }
+          if (result) {
+            HipaaLogger.logEvent({eventType: "create", userId: Meteor.userId(), userName: Meteor.user().fullName(), collectionName: "Observations", recordId: context.state.observationId});
+            Session.set('observationPageTabIndex', 1);
+            Session.set('selectedObservationId', false);
+            Bert.alert('Observation added!', 'success');
+          }
+        });
+      }
+    } 
+    Session.set('observationPageTabIndex', 1);
+  }
   onTableRowClick(observationId){
     Session.set('selectedObservationId', observationId);
-    Session.set('selectedPatient', Observations.findOne(observationId));
+    Session.set('selectedPatient', Observations.findOne({_id: observationId}));
   }
   onTableCellClick(id){
-    Session.set('patientsUpsert', false);
+    Session.set('observationsUpsert', false);
     Session.set('selectedObservationId', id);
-    Session.set('patientPageTabIndex', 2);
+    Session.set('observationPageTabIndex', 2);
   }
   tableActionButtonClick(_id){
-    let patient = Observations.findOne({_id: _id});
+    let observation = Observations.findOne({_id: _id});
 
-    // console.log("ObservationTable.onSend()", patient);
+    // console.log("ObservationTable.onSend()", observation);
 
     var httpEndpoint = "http://localhost:8080";
     if (get(Meteor, 'settings.public.interfaces.default.channel.endpoint')) {
       httpEndpoint = get(Meteor, 'settings.public.interfaces.default.channel.endpoint');
     }
     HTTP.post(httpEndpoint + '/Observation', {
-      data: patient
+      data: observation
     }, function(error, result){
       if (error) {
         console.log("error", error);
@@ -165,25 +255,31 @@ export class ObservationsPage extends React.Component {
                   onInsert={ this.onInsert }
                   observation={ this.data.selectedObservation }
                   observationId={ this.data.selectedObservationId } 
+
+                  onDelete={ this.onDeleteObservation }
+                  onUpsert={ this.onUpsertObservation }
+                  onCancel={ this.onCancelUpsertObservation } 
+
                   />
               </Tab>
               <Tab className="observationListTab" label='Observations' onActive={this.handleActive} style={this.data.style.tab} value={1}>
                 <ObservationsTable 
                   displayBarcodes={false} 
                   multiline={false}
-                  showSubjects={false}
-                  showDevices={false}
-
+                  hideSubjects={true}
+                  hideDevices={true}
+                  multiline={false}                  
+                  hideComparator={true}
+                  hideValue={false}
                   noDataMessagePadding={100}
-                  patients={ this.data.observations }
+                  observations={ this.data.observations }
                   paginationLimit={ this.data.pagnationLimit }
                   appWidth={ Session.get('appWidth') }
                   actionButtonLabel="Send"
                   onRowClick={ this.onTableRowClick }
                   onCellClick={ this.onTableCellClick }
                   onActionButtonClick={this.tableActionButtonClick}
-
-
+                  onRemoveRecord={ this.onDeleteObservation }
                   />
               </Tab>
               <Tab className="observationDetailsTab" label='Detail' onActive={this.handleActive} style={this.data.style.tab} value={2}>
@@ -193,13 +289,14 @@ export class ObservationsPage extends React.Component {
                   displayBarcodes={false}
                   observation={ this.data.selectedObservation }
                   observationId={ this.data.selectedObservationId } 
-                  showPatientInputs={true}
+                  showObservationInputs={true}
                   showHints={false}
                   onInsert={ this.onInsert }
-                  onUpdate={ this.onUpdate }
-                  onRemove={ this.onRemove }
-                  onCancel={ this.onCancel }
-                  />
+
+                  onDelete={ this.onDeleteObservation }
+                  onUpsert={ this.onUpsertObservation }
+                  onCancel={ this.onCancelUpsertObservation } 
+              />
               </Tab>
             </Tabs>
 

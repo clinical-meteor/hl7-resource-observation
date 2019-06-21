@@ -77,7 +77,10 @@ flattenObservation = function(observation){
   if(result.valueString.length > 0){
     result.value = result.valueString;
   } else {
-    result.value = result.comparator + ' ' + result.observationValue + ' ' + result.unit;
+    if(result.comparator){
+      result.value = result.comparator + ' ';
+    } 
+    result.value = result.value + result.observationValue + ' ' + result.unit;
   }
 
   return result;
@@ -222,57 +225,57 @@ export class ObservationsTable extends React.Component {
     }
   }
   renderBarcode(id){
-    if (this.props.displayBarcodes) {
+    if (!this.props.hideBarcodes) {
       return (
         <td><span className="barcode">{id}</span></td>
       );
     }
   }
   renderBarcodeHeader(){
-    if (this.props.displayBarcodes) {
+    if (!this.props.hideBarcodes) {
       return (
-        <th>_id</th>
+        <th>System ID</th>
       );
     }
   }
   renderSubject(id){
-    if (this.props.showSubjects) {
+    if (!this.props.hideSubjects) {
       return (
         <td className='name'>{ id }</td>
       );
     }
   }
   renderSubjectHeader(){
-    if (this.props.showSubjects) {
+    if (!this.props.hideSubjects) {
       return (
-        <th className='name'>subject</th>
+        <th className='name'>Subject</th>
       );
     }
   }
   renderDevice(device){
-    if (this.props.showDevices) {
+    if (!this.props.hideDevices) {
       return (
         <td className='device.display'>{device }</td>
       );
     }
   }
   renderDeviceHeader(){
-    if (this.props.showDevices) {
+    if (!this.props.hideDevices) {
       return (
-        <th className='device.display'>device</th>
+        <th className='device.display'>Device</th>
       );
     }
   }
 
   renderValue(valueString){
-    if (this.props.showvalueString) {
+    if (!this.props.hideValue) {
       return (
         <td className='value'>{ valueString }</td>
       );
     }
   }
   renderValueHeader(){
-    if (this.props.showValueString) {
+    if (!this.props.hideValue) {
       return (
         <th className='value'>Value</th>
       );
@@ -286,11 +289,18 @@ export class ObservationsTable extends React.Component {
       );
     }
   }
-  renderCode(code){
+  renderCode(code, value){
     if (!this.props.hideCode) {
-      return (
-        <td className='category'>{ code }</td>
-      );
+      if(this.props.multiline){
+        return (<td className='code'>
+          <span style={{fontWeight: 400}}>{code }</span> <br />
+          { value }
+        </td>)
+      } else {
+        return (
+          <td className='category'>{ code }</td>
+        );  
+      }
     }
   }
   renderCategoryHeader(){
@@ -309,28 +319,28 @@ export class ObservationsTable extends React.Component {
   }
 
   renderValueString(valueString){
-    if (this.props.showValueString) {
+    if (!this.props.hideValue) {
       return (
         <td className='value'>{ valueString }</td>
       );
     }
   }
   renderValueStringHeader(){
-    if (this.props.showValueString) {
+    if (!this.props.hideValue) {
       return (
         <th className='value'>Value</th>
       );
     }
   }
   renderComparator(comparator){
-    if (this.props.showComparator) {
+    if (!this.props.hideComparator) {
       return (
         <td className='comparator'>{ comparator }</td>
       );
     }
   }
   renderComparatorHeader(){
-    if (this.props.showComparator) {
+    if (!this.props.hideComparator) {
       return (
         <th className='comparator'>Comparator</th>
         );
@@ -394,13 +404,10 @@ export class ObservationsTable extends React.Component {
               { this.renderToggle() }
               { this.renderActionIcons(observationsToRender[i]) }
               { this.renderCategory(observationsToRender[i].category) }
-              <td className='code'>
-                <span style={{fontWeight: 400}}>{observationsToRender[i].code }</span> <br />
-                {observationsToRender[i].value }
-                </td>
+              { this.renderCode(observationsToRender[i].code, observationsToRender[i].value) }
               {/* {this.renderComparator(observationsToRender[i].comparator)}
               {this.renderValueString(observationsToRender[i].observationValue)} */}
-              {this.renderValue(observationsToRender[i].observationValue)}
+              {this.renderValue(observationsToRender[i].value)}
               {/* <td className='unit'>{observationsToRender[i].unit }</td> */}
               {this.renderSubject(observationsToRender[i].subject)}
               <td className='status' >{observationsToRender[i].status }</td>
@@ -420,7 +427,7 @@ export class ObservationsTable extends React.Component {
               {/* <td className='code'>{observationsToRender[i].code }</td> */}
               {/* {this.renderComparator(observationsToRender[i].comparator)}
               {this.renderValueString(observationsToRender[i].observationValue)} */}
-              {this.renderValue(observationsToRender[i].observationValue)}
+              {this.renderValue(observationsToRender[i].value)}
               {/* <td className='unit'>{observationsToRender[i].unit }</td> */}
               {this.renderSubject(observationsToRender[i].subject)}
               <td className='status' >{observationsToRender[i].status }</td>
@@ -469,12 +476,14 @@ ObservationsTable.propTypes = {
   query: PropTypes.object,
   paginationLimit: PropTypes.number,
   hideCode: PropTypes.bool,
-  showSubjects: PropTypes.bool,
-  showDevices: PropTypes.bool,
-  showValueString: PropTypes.bool,
-  showComparator: PropTypes.bool,
+  hideBarcodes: PropTypes.bool,
+  hideSubjects: PropTypes.bool,
+  hideDevices: PropTypes.bool,
+  hideComparator: PropTypes.bool,
+  hideValue: PropTypes.bool,
   hideCheckboxes: PropTypes.bool,
   hideActionIcons: PropTypes.bool,
+  hideIdentifier: PropTypes.bool,
   enteredInError: PropTypes.bool,
   multiline: PropTypes.bool,
   onCellClick: PropTypes.func,
