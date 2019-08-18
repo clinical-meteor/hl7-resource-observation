@@ -442,7 +442,6 @@ export class ObservationsTable extends React.Component {
 
 
     return(
-      <CardText>
         <Table id="observationsTable" hover >
           <thead>
             <tr>
@@ -465,7 +464,6 @@ export class ObservationsTable extends React.Component {
             { tableRows }
           </tbody>
         </Table>
-      </CardText>
     );
   }
 }
