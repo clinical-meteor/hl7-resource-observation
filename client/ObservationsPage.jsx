@@ -240,7 +240,7 @@ export class ObservationsPage extends React.Component {
   render() {
     return (
       <div id="observationsPage">
-        <VerticalCanvas>
+        <FullPageCanvas>
           <GlassCard height='auto'>
             <CardTitle
               title="Observations"
@@ -301,7 +301,7 @@ export class ObservationsPage extends React.Component {
             </Tabs>
 
           </GlassCard>
-        </VerticalCanvas>
+        </FullPageCanvas>
       </div>
     );
   }
