@@ -1,6 +1,6 @@
 Package.describe({
   name: 'clinical:hl7-resource-observation',
-  version: '1.6.2',
+  version: '1.6.3',
   summary: 'HL7 FHIR Resource - Observation',
   git: 'https://github.com/clinical-meteor/hl7-resource-observation',
   documentation: 'README.md'
@@ -17,8 +17,7 @@ Package.onUse(function (api) {
   api.use('clinical:hl7-resource-bundle@1.6.3');
 
   api.use('simple:json-routes@2.1.0');
-  api.use('momentjs:moment@2.17.1');
-  api.use('ecmascript@0.9.0');
+  api.use('ecmascript@0.13.0');
   api.use('session');
   api.use('http');
   api.use('react-meteor-data@0.2.15');
@@ -47,7 +46,7 @@ Package.onUse(function (api) {
 Npm.depends({
   "simpl-schema": "1.5.3",
   "moment": "2.22.2",
-  "lodash": "4.17.4",
+  "lodash": "4.17.13",
   "react-icons": "3.2.2",
   "material-fhir-ui": "0.9.19",
   "winston": "3.2.1"
