@@ -1,13 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
-import { CardText, Checkbox } from 'material-ui';
-import { Table } from 'react-bootstrap';
 
-// import ReactMixin from 'react-mixin';
-// import { ReactMeteorData } from 'meteor/react-meteor-data';
-// import { Session } from 'meteor/session';
-// import { GlassCard, VerticalCanvas, Glass, DynamicSpacer } from 'meteor/clinical:glass-ui';
+import { 
+  Checkbox,
+  Card,
+  CardHeader,
+  CardContent,
+  Tab, 
+  Tabs,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TablePagination,
+} from '@material-ui/core';
 
 import moment from 'moment-es6'
 import _ from 'lodash';
@@ -16,6 +24,19 @@ let set = _.set;
 
 import { FaTags, FaCode, FaPuzzlePiece, FaLock  } from 'react-icons/fa';
 import { GoTrashcan } from 'react-icons/go'
+
+import { ThemeProvider, makeStyles } from '@material-ui/styles';
+const useStyles = makeStyles(theme => ({
+  button: {
+    background: theme.background,
+    border: 0,
+    borderRadius: 3,
+    boxShadow: '0 3px 5px 2px rgba(255, 105, 135, .3)',
+    color: theme.buttonText,
+    height: 48,
+    padding: '0 30px',
+  }
+}));
 
 let styles = {
   hideOnPhone: {
@@ -33,8 +54,7 @@ let styles = {
   }
 }
 
-
-flattenObservation = function(observation){
+flattenObservation = function(observation, dateFormat){
   let result = {
     _id: '',
     meta: '',
@@ -53,12 +73,18 @@ flattenObservation = function(observation){
     unit: ''
   };
 
+  if(!dateFormat){
+    dateFormat = get(Meteor, "settings.public.defaults.dateFormat", "YYYY-MM-DD hh a");
+  }
+
   result._id =  get(observation, 'id') ? get(observation, 'id') : get(observation, '_id');
+
   result.category = get(observation, 'category.text', '');
   result.code = get(observation, 'code.text', '');
+  result.codeValue = get(observation, 'code.coding[0].code', '');
   result.valueString = get(observation, 'valueString', '');
   result.comparator = get(observation, 'valueQuantity.comparator', '');
-  result.observationValue = get(observation, 'valueQuantity.value', '');
+  result.observationValue = Number.parseFloat(get(observation, 'valueQuantity.value', 0)).toFixed(2);;
   result.unit = get(observation, 'valueQuantity.unit', '');
   result.subject = get(observation, 'subject.display', '');
   result.subjectId = get(observation, 'subject.reference', '');
@@ -66,10 +92,10 @@ flattenObservation = function(observation){
   result.status = get(observation, 'status', '');
   
   if(get(observation, 'effectiveDateTime')){
-    result.effectiveDateTime =  moment(get(observation, 'effectiveDateTime')).format("YYYY-MM-DD hh a");
+    result.effectiveDateTime =  moment(get(observation, 'effectiveDateTime')).format(dateFormat);
   }
   if(get(observation, 'issued')){
-    result.effectiveDateTime =  moment(get(observation, 'issued')).format("YYYY-MM-DD hh a");    
+    result.effectiveDateTime =  moment(get(observation, 'issued')).format(dateFormat);    
   }
 
   result.meta = get(observation, 'category.text', '');
@@ -87,105 +113,74 @@ flattenObservation = function(observation){
 }
 
 
+function ObservationsTable(props){
+  // logger.log('ObservationsTable.props', props);
+  // logger.log('ObservationsTable.props.observations', props.observations);
 
+  const classes = useStyles();
 
-export class ObservationsTable extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      selected: [],
-      observations: []
-    }
+  //---------------------------------------------------------------------
+  // Pagination
+
+  let rows = [];
+  let rowsPerPageToRender = 5;
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  if(props.rowsPerPage){
+    // if we receive an override as a prop, render that many rows
+    // best to use rowsPerPage with disablePagination
+    rowsPerPageToRender = props.rowsPerPage;
+  } else {
+    // otherwise default to the user selection
+    rowsPerPageToRender = rowsPerPage;
   }
-  getMeteorData() {
 
-    // this should all be handled by props
-    // or a mixin!
-    let data = {
-      style: {
-        text: Glass.darkroom()
-      },
-      selected: [],
-      observations: []
-    };
-
-
-    if(this.props.data){
-      console.log('this.props.data', this.props.data);
-
-      if(this.props.data.length > 0){              
-        this.props.data.forEach(function(observation){
-          data.observations.push(flattenObservation(observation));
-        });  
-      }
-    } else {
-      let query = {};
-      if(this.props.query){
-        query = this.props.query
-      }
-      if(this.props.hideEnteredInError){
-        query['verificationStatus'] = {
-          $nin: ['entered-in-error']  // unconfirmed | provisional | differential | confirmed | refuted | entered-in-error
-        }
-      }
-
-      data.observations = Observations.find(query).map(function(observation){
-        return flattenObservation(observation);
-      });
-    }
-
-    // // this could be another mixin
-    // if (Session.get('glassBlurEnabled')) {
-    //   data.style.filter = "blur(3px)";
-    //   data.style.WebkitFilter = "blur(3px)";
-    // }
-
-    // // this could be another mixin
-    // if (Session.get('backgroundBlurEnabled')) {
-    //   data.style.backdropFilter = "blur(5px)";
-    // }
-
-    if(process.env.NODE_ENV === "test") console.log("ObservationsTable[data]", data);
-    return data;
+  let paginationCount = 101;
+  if(props.count){
+    paginationCount = props.count;
+  } else {
+    paginationCount = rows.length;
   }
-  handleChange(row, key, value) {
-    const source = this.state.source;
-    source[row][key] = value;
-    this.setState({source});
-  }
-  displayOnMobile(width){
-    let style = {};
-    if(['iPhone'].includes(window.navigator.platform)){
-      style.display = "none";
-    }
-    if(width){
-      style.width = width;
-    }
-    return style;
-  }
-  handleSelect(selected) {
-    this.setState({selected});
-  }
-  getDate(){
-    return "YYYY/MM/DD";
-  }
-  noChange(){
-    return "";
-  }
-  rowClick(id){
+
+  // handleChange(row, key, value) {
+  //   const source = this.state.source;
+  //   source[row][key] = value;
+  //   this.setState({source});
+  // }
+  // displayOnMobile(width){
+  //   let style = {};
+  //   if(['iPhone'].includes(window.navigator.platform)){
+  //     style.display = "none";
+  //   }
+  //   if(width){
+  //     style.width = width;
+  //   }
+  //   return style;
+  // }
+  // function handleSelect(selected) {
+  //   setState({selected});
+  // }
+  // function getDate(){
+  //   return "YYYY/MM/DD";
+  // }
+  // function noChange(){
+  //   return "";
+  // }
+  function rowClick(id){
     Session.set("selectedObservationId", id);
     Session.set('observationPageTabIndex', 2);
     Session.set('observationDetailState', false);
   }
-  renderActionIconsHeader(){
-    if (!this.props.hideActionIcons) {
+  function renderActionIconsHeader(){
+    if (!props.hideActionIcons) {
       return (
-        <th className='actionIcons' style={{width: '100px'}}>Actions</th>
+        <TableCell className='actionIcons' style={{width: '100px'}}>Actions</TableCell>
       );
     }
   }
-  renderActionIcons(observation ){
-    if (!this.props.hideActionIcons) {
+  function renderActionIcons(observation ){
+    if (!props.hideActionIcons) {
       let iconStyle = {
         marginLeft: '4px', 
         marginRight: '4px', 
@@ -194,302 +189,358 @@ export class ObservationsTable extends React.Component {
       }
 
       return (
-        <td className='actionIcons' style={{minWidth: '120px'}}>
+        <TableCell className='actionIcons' style={{minWidth: '120px'}}>
           <FaTags style={iconStyle} onClick={this.onMetaClick.bind(this, observation)} />
           <GoTrashcan style={iconStyle} onClick={this.removeRecord.bind(this, observation._id)} />  
-        </td>
+        </TableCell>
       );
     }
   } 
-  removeRecord(_id){
-    console.log('Remove observation ', _id)
-    if(this.props.onRemoveRecord){
-      this.props.onRemoveRecord(_id);
+  function removeRecord(_id){
+    logger.info('Remove observation: ' + _id)
+    if(props.onRemoveRecord){
+      props.onRemoveRecord(_id);
     }
   }
-  onActionButtonClick(id){
-    if(typeof this.props.onActionButtonClick === "function"){
-      this.props.onActionButtonClick(id);
+  function onActionButtonClick(id){
+    if(typeof props.onActionButtonClick === "function"){
+      props.onActionButtonClick(id);
     }
   }
-  cellClick(id){
-    if(typeof this.props.onCellClick === "function"){
-      this.props.onCellClick(id);
+  function cellClick(id){
+    if(typeof props.onCellClick === "function"){
+      props.onCellClick(id);
     }
   }
 
-  onMetaClick(patient){
+  function onMetaClick(patient){
     let self = this;
-    if(this.props.onMetaClick){
-      this.props.onMetaClick(self, patient);
+    if(props.onMetaClick){
+      props.onMetaClick(self, patient);
     }
   }
-  renderBarcode(id){
-    if (!this.props.hideBarcodes) {
+  function renderBarcode(id){
+    if (!props.hideBarcodes) {
       return (
-        <td><span className="barcode">{id}</span></td>
+        <TableCell><span className="barcode helvetica">{id}</span></TableCell>
       );
     }
   }
-  renderBarcodeHeader(){
-    if (!this.props.hideBarcodes) {
+  function renderBarcodeHeader(){
+    if (!props.hideBarcodes) {
       return (
-        <th>System ID</th>
+        <TableCell>System ID</TableCell>
       );
     }
   }
-  renderSubject(id){
-    if (!this.props.hideSubjects) {
+  function renderSubject(id){
+    if (!props.hideSubject) {
       return (
-        <td className='name'>{ id }</td>
+        <TableCell className='name'>{ id }</TableCell>
       );
     }
   }
-  renderSubjectHeader(){
-    if (!this.props.hideSubjects) {
+  function renderSubjectHeader(){
+    if (!props.hideSubject) {
       return (
-        <th className='name'>Subject</th>
+      <TableCell className='name'>Subject</TableCell>
       );
     }
   }
-  renderDevice(device){
-    if (!this.props.hideDevices) {
+  function renderDevice(device){
+    if (!props.hideDevices) {
       return (
-        <td className='device.display'>{device }</td>
+      <TableCell className='device.display'>{device }</TableCell>
+      );
+    }    
+  }
+  function renderDeviceHeader(){
+    if (!props.hideDevices) {
+      return (
+        <TableCell className='device.display'>Device</TableCell>
       );
     }
   }
-  renderDeviceHeader(){
-    if (!this.props.hideDevices) {
+  function renderValue(valueString){
+    if (!props.hideValue) {
       return (
-        <th className='device.display'>Device</th>
+        <TableCell className='value'>{ valueString }</TableCell>
       );
     }
   }
-
-  renderValue(valueString){
-    if (!this.props.hideValue) {
+  function renderValueHeader(){
+    if (!props.hideValue) {
       return (
-        <td className='value'>{ valueString }</td>
+        <TableCell className='value'>Value</TableCell>
       );
     }
   }
-  renderValueHeader(){
-    if (!this.props.hideValue) {
+  function renderCodeValueHeader(){
+    if (!props.hideCodeValue) {
       return (
-        <th className='value'>Value</th>
+        <TableCell className='codeValue'>Code Value</TableCell>
       );
     }
   }
-
-  renderCodeHeader(){
-    if (!this.props.hideCode) {
+  function renderCodeValue(code){
+    if (!props.hideCodeValue) {
       return (
-        <th className='code'>Code</th>
+        <TableCell className='codeValue'>{ code }</TableCell>
+      );  
+    }
+  }
+  function renderCodeHeader(){
+    if (!props.hideCode) {
+      return (
+        <TableCell className='code'>Code</TableCell>
       );
     }
   }
-  renderCode(code, value){
-    if (!this.props.hideCode) {
-      if(this.props.multiline){
-        return (<td className='code'>
+  function renderCode(code, value){
+    if (!props.hideCode) {
+      if(props.multiline){
+        return (<TableCell className='code'>
           <span style={{fontWeight: 400}}>{code }</span> <br />
           { value }
-        </td>)
+        </TableCell>)
       } else {
         return (
-          <td className='category'>{ code }</td>
+          <TableCell className='category'>{ code }</TableCell>
         );  
       }
     }
   }
-  renderCategoryHeader(){
-    if (this.props.multiline === false) {
+  function renderCategoryHeader(){
+    if (props.multiline === false) {
       return (
-        <th className='category'>Category</th>
+        <TableCell className='category'>Category</TableCell>
       );
     }
   }
-  renderCategory(category){
-    if (this.props.multiline === false) {
+  function renderCategory(category){
+    if (props.multiline === false) {
       return (
-        <td className='category'>{ category }</td>
+        <TableCell className='category'>{ category }</TableCell>
       );
     }
   }
-
-  renderValueString(valueString){
-    if (!this.props.hideValue) {
+  function renderValueString(valueString){
+    if (!props.hideValue) {
       return (
-        <td className='value'>{ valueString }</td>
+        <TableCell className='value'>{ valueString }</TableCell>
       );
     }
   }
-  renderValueStringHeader(){
-    if (!this.props.hideValue) {
+  function renderValueStringHeader(){
+    if (!props.hideValue) {
       return (
-        <th className='value'>Value</th>
+        <TableCell className='value'>Value</TableCell>
       );
     }
   }
-  renderComparator(comparator){
-    if (!this.props.hideComparator) {
+  function renderComparator(comparator){
+    if (!props.hideComparator) {
       return (
-        <td className='comparator'>{ comparator }</td>
+        <TableCell className='comparator'>{ comparator }</TableCell>
       );
     }
   }
-  renderComparatorHeader(){
-    if (!this.props.hideComparator) {
+  function renderComparatorHeader(){
+    if (!props.hideComparator) {
       return (
-        <th className='comparator'>Comparator</th>
+        <TableCell className='comparator'>Comparator</TableCell>
         );
     }
   }
-  renderToggleHeader(){
-    if (!this.props.hideCheckboxes) {
+  function renderToggleHeader(){
+    if (!props.hideCheckboxes) {
       return (
-        <th className="toggle" style={{width: '60px'}} >Toggle</th>
+        <TableCell className="toggle" style={{width: '60px'}} >Toggle</TableCell>
       );
     }
   }
-  renderToggle(){
-    if (!this.props.hideCheckboxes) {
+  function renderToggle(){
+    if (!props.hideCheckboxes) {
       return (
-        <td className="toggle" style={{width: '60px'}}>
+        <TableCell className="toggle" style={{width: '60px'}}>
             <Checkbox
               defaultChecked={true}
             />
-          </td>
+          </TableCell>
+      );
+    }
+  }
+  function renderStatus(valueString){
+    if (!props.hideStatus) {
+      return (
+        <TableCell className='status'>{ valueString }</TableCell>
+      );
+    }
+  }
+  function renderStatusHeader(){
+    if (!props.hideStatus) {
+      return (
+        <TableCell className='status'>Status</TableCell>
+      );
+    }
+  }
+  function renderEffectiveDateTimeHeader(){
+    if (!props.hideEffectiveDateTime) {
+      return (
+        <TableCell className='effectiveDateTime' style={{minWidth: '140px'}}>Performed</TableCell>
+      );
+    }
+  }
+  function renderEffectiveDateTime(effectiveDateTime){
+    if (!props.hideEffectiveDateTime) {
+      return (
+        <TableCell className='effectiveDateTime' style={{minWidth: '140px'}}>{ effectiveDateTime }</TableCell>
       );
     }
   }
 
-  render () {
-    let tableRows = [];
-    let footer;
+  let tableRows = [];
+  let observationsToRender = [];
+  let footer;
+  let dateFormat = "YYYY-MM-DD";
 
-    if(this.props.appWidth){
-      if (this.props.appWidth < 768) {
-        styles.hideOnPhone.visibility = 'hidden';
-        styles.hideOnPhone.display = 'none';
-        styles.cellHideOnPhone.visibility = 'hidden';
-        styles.cellHideOnPhone.display = 'none';
-      } else {
-        styles.hideOnPhone.visibility = 'visible';
-        styles.hideOnPhone.display = 'table-cell';
-        styles.cellHideOnPhone.visibility = 'visible';
-        styles.cellHideOnPhone.display = 'table-cell';
-      }  
-    }
-
-    let observationsToRender = [];
-    if(this.props.observations){
-      if(this.props.observations.length > 0){              
-        this.props.observations.forEach(function(observation){
-          observationsToRender.push(flattenObservation(observation));
-        });  
-      }
-    }
-
-    if(observationsToRender.length === 0){
-      console.log('No observations to render');
-      // footer = <TableNoData noDataPadding={ this.props.noDataMessagePadding } />
-    } else {
-      for (var i = 0; i < observationsToRender.length; i++) {
-        if(this.props.multiline){
-          tableRows.push(
-            <tr className="observationRow" key={i} onClick={ this.rowClick.bind(this, observationsToRender[i]._id)} >
-              {/* <td className='category'>{observationsToRender[i].category }</td> */}
-              { this.renderToggle() }
-              { this.renderActionIcons(observationsToRender[i]) }
-              { this.renderCategory(observationsToRender[i].category) }
-              { this.renderCode(observationsToRender[i].code, observationsToRender[i].value) }
-              {/* {this.renderComparator(observationsToRender[i].comparator)}
-              {this.renderValueString(observationsToRender[i].observationValue)} */}
-              {this.renderValue(observationsToRender[i].value)}
-              {/* <td className='unit'>{observationsToRender[i].unit }</td> */}
-              {this.renderSubject(observationsToRender[i].subject)}
-              <td className='status' >{observationsToRender[i].status }</td>
-              {this.renderDevice(observationsToRender[i].device)}
-              <td className='date' style={{minWidth: '140px'}}>{observationsToRender[i].effectiveDateTime }</td>
-              {this.renderBarcode(observationsToRender[i]._id)}
-            </tr>
-          );    
-  
-        } else {
-          tableRows.push(
-            <tr className="observationRow" key={i} onClick={ this.rowClick.bind(this, observationsToRender[i]._id)} >            
-              { this.renderToggle() }
-              { this.renderActionIcons(observationsToRender[i]) }
-              { this.renderCategory(observationsToRender[i].category) }
-              { this.renderCode(observationsToRender[i].code) }
-              {/* <td className='code'>{observationsToRender[i].code }</td> */}
-              {/* {this.renderComparator(observationsToRender[i].comparator)}
-              {this.renderValueString(observationsToRender[i].observationValue)} */}
-              {this.renderValue(observationsToRender[i].value)}
-              {/* <td className='unit'>{observationsToRender[i].unit }</td> */}
-              {this.renderSubject(observationsToRender[i].subject)}
-              <td className='status' >{observationsToRender[i].status }</td>
-              {this.renderDevice(observationsToRender[i].device)}
-              <td className='date' style={{minWidth: '140px'}}>{observationsToRender[i].effectiveDateTime }</td>
-              {this.renderBarcode(observationsToRender[i]._id)}
-            </tr>
-          );    
-        }
-      }
-    }
-
-
-    return(
-        <Table id="observationsTable" hover >
-          <thead>
-            <tr>
-              { this.renderToggleHeader() }
-              { this.renderActionIconsHeader() }
-              {this.renderCategoryHeader() }
-              {this.renderCodeHeader() }
-              {/* {this.renderComparatorHeader() }
-              {this.renderValueStringHeader() } */}
-              {this.renderValueHeader() }
-              {/* <th className='unit'>Unit</th> */}
-              {this.renderSubjectHeader() }
-              <th className='status'>Status</th>
-              {this.renderDeviceHeader() }
-              <th className='date' style={{minWidth: '140px'}}>Date</th>
-              {this.renderBarcodeHeader() }
-            </tr>
-          </thead>
-          <tbody>
-            { tableRows }
-          </tbody>
-        </Table>
-    );
+  if(props.showMinutes){
+    dateFormat = "YYYY-MM-DD hh:mm";
   }
+  if(props.dateFormat){
+    dateFormat = props.dateFormat;
+  }
+
+  if(props.observations){
+    if(props.observations.length > 0){     
+      let count = 0;    
+      props.observations.forEach(function(observation){
+        if((count >= (page * rowsPerPageToRender)) && (count < (page + 1) * rowsPerPageToRender)){
+          observationsToRender.push(flattenObservation(observation, dateFormat));
+        }
+        count++;
+      });  
+    }
+  }
+
+  if(observationsToRender.length === 0){
+    logger.trace('ObservationsTable:  No observations to render.');
+    // footer = <TableNoData noDataPadding={ props.noDataMessagePadding } />
+  } else {
+    for (var i = 0; i < observationsToRender.length; i++) {
+      if(props.multiline){
+        tableRows.push(
+          <TableRow className="observationRow" key={i} onClick={ rowClick.bind(this, observationsToRender[i]._id)} >
+            { renderToggle() }
+            { renderActionIcons(observationsToRender[i]) }
+            { renderCategory(observationsToRender[i].category) }
+            { renderCodeValue(observationsToRender[i].codeValue) }
+            { renderCode(observationsToRender[i].code, observationsToRender[i].value) }
+            { renderValue(observationsToRender[i].value)}
+            { renderSubject(observationsToRender[i].subject)}
+            { renderStatus(observationsToRender[i].status) }
+            { renderDevice(observationsToRender[i].device)}
+            { renderEffectiveDateTime(observationsToRender[i].effectiveDateTime) }
+            { renderBarcode(observationsToRender[i]._id)}
+          </TableRow>
+        );    
+
+      } else {
+        tableRows.push(
+          <TableRow className="observationRow" key={i} onClick={ rowClick.bind(this, observationsToRender[i]._id)} >            
+            { renderToggle() }
+            { renderActionIcons(observationsToRender[i]) }
+            { renderCategory(observationsToRender[i].category) }
+            { renderCodeValue(observationsToRender[i].codeValue) }
+            { renderCode(observationsToRender[i].code) }
+            { renderValue(observationsToRender[i].value)}
+            { renderSubject(observationsToRender[i].subject)}
+            { renderStatus(observationsToRender[i].status) }
+            { renderDevice(observationsToRender[i].device)}
+            { renderEffectiveDateTime(observationsToRender[i].effectiveDateTime) }
+            { renderBarcode(observationsToRender[i]._id)}
+          </TableRow>
+        );    
+      }
+    }
+  }
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  let paginationFooter;
+  if(!props.disablePagination){
+    paginationFooter = <TablePagination
+      component="div"
+      rowsPerPageOptions={[5, 10, 25, 100]}
+      colSpan={3}
+      count={paginationCount}
+      rowsPerPage={rowsPerPageToRender}
+      page={page}
+      onChangePage={handleChangePage}
+      style={{float: 'right', border: 'none'}}
+    />
+  }
+  
+  return(
+    <Table id="observationsTable" >
+      <TableHead>
+        <TableRow>
+          { renderToggleHeader() }
+          { renderActionIconsHeader() }
+          { renderCategoryHeader() }
+          { renderCodeValueHeader() }
+          { renderCodeHeader() }
+          { renderValueHeader() }
+          { renderSubjectHeader() }
+          { renderStatusHeader() }
+          { renderDeviceHeader() }
+          { renderEffectiveDateTimeHeader() }
+          { renderBarcodeHeader() }
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        { tableRows }
+      </TableBody>
+    </Table>
+  );  
 }
 
 ObservationsTable.propTypes = {
-  barcodes: PropTypes.bool,
   observations: PropTypes.array,
   query: PropTypes.object,
+  barcodes: PropTypes.bool,
   paginationLimit: PropTypes.number,
-  hideCode: PropTypes.bool,
-  hideBarcodes: PropTypes.bool,
-  hideSubjects: PropTypes.bool,
-  hideDevices: PropTypes.bool,
-  hideComparator: PropTypes.bool,
-  hideValue: PropTypes.bool,
+  disablePagination: PropTypes.bool,
+
   hideCheckboxes: PropTypes.bool,
   hideActionIcons: PropTypes.bool,
   hideIdentifier: PropTypes.bool,
+  hideCategory: PropTypes.bool,
+  hideValue: PropTypes.bool,
+  hideSubject: PropTypes.bool,
+  hideSubjects: PropTypes.bool,
+  hideSubjectReference: PropTypes.bool,
+  hideEffectiveDateTime: PropTypes.bool,
+  hideStatus: PropTypes.bool,
+  hideCodeValue: PropTypes.bool,
+  hideCode: PropTypes.bool,
+  hideDevices: PropTypes.bool,
+  hideComparator: PropTypes.bool,
   enteredInError: PropTypes.bool,
   multiline: PropTypes.bool,
+  
   onCellClick: PropTypes.func,
   onRowClick: PropTypes.func,
   onMetaClick: PropTypes.func,
   onRemoveRecord: PropTypes.func,
   onActionButtonClick: PropTypes.func,
-  actionButtonLabel: PropTypes.string
+  actionButtonLabel: PropTypes.string,
+
+  rowsPerPage: PropTypes.number,
+  dateFormat: PropTypes.string,
+  showMinutes: PropTypes.bool
 };
 
 

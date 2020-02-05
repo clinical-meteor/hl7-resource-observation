@@ -1,8 +1,17 @@
 
-import { CardText, CardTitle } from 'material-ui/Card';
-import { Tab, Tabs } from 'material-ui/Tabs';
-
-import { GlassCard, VerticalCanvas, FullPageCanvas, Glass, DynamicSpacer } from 'meteor/clinical:glass-ui';
+import { 
+  Grid, 
+  Divider,
+  Card,
+  CardHeader,
+  CardContent,
+  Button,
+  Tab, 
+  Tabs,
+  Typography,
+  Box
+} from '@material-ui/core';
+import { StyledCard, PageCanvas, DynamicSpacer } from 'material-fhir-ui';
 
 import { Meteor } from 'meteor/meteor';
 import { Session } from 'meteor/session';
@@ -14,6 +23,29 @@ import ObservationDetail from './ObservationDetail';
 import ObservationsTable from './ObservationsTable';
 
 import { get } from 'lodash';
+
+//=============================================================================================================================================
+// TABS
+
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <Typography
+      component="div"
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      <Box p={3}>{children}</Box>
+    </Typography>
+  );
+}
+
+//=============================================================================================================================================
+// COMPONENT
 
 Session.setDefault('observationPageTabIndex', 1);
 Session.setDefault('observationSearchFilter', '');
@@ -27,7 +59,7 @@ export class ObservationsPage extends React.Component {
       observationId: false,
       observation: {}
     }
-  }
+  } 
   getMeteorData() {
     let data = {
       style: {
@@ -44,7 +76,8 @@ export class ObservationsPage extends React.Component {
       paginationLimit: 100,
       selectedObservation: false,
       selected: [],
-      observations: []
+      observations: [],
+      observationsCount: 0
     };
 
     // number of items in the table should be set globally
@@ -63,6 +96,7 @@ export class ObservationsPage extends React.Component {
     }
 
     data.observations = Observations.find().fetch();
+    data.observationsCount = Observations.find().count();
 
     data.style = Glass.blur(data.style);
     data.style.appbar = Glass.darkroom(data.style.appbar);
@@ -116,12 +150,12 @@ export class ObservationsPage extends React.Component {
     Observations._collection.remove({_id: get(context, 'state.observationId')}, function(error, result){
       if (error) {
         if(process.env.NODE_ENV === "test") console.log('Observations.insert[error]', error);
-        Bert.alert(error.reason, 'danger');
+        // Bert.alert(error.reason, 'danger');
       }
       if (result) {
         Session.set('selectedObservationId', false);
         HipaaLogger.logEvent({eventType: "delete", userId: Meteor.userId(), userName: Meteor.user().fullName(), collectionName: "Observations", recordId: context.state.observationId});
-        Bert.alert('Observation removed!', 'success');
+        // Bert.alert('Observation removed!', 'success');
       }
     });
     Session.set('observationPageTabIndex', 1);
@@ -160,13 +194,13 @@ export class ObservationsPage extends React.Component {
         Observations._collection.update({_id: get(context, 'state.observationId')}, {$set: fhirObservationData }, function(error, result){
           if (error) {
             if(process.env.NODE_ENV === "test") console.log("Observations.insert[error]", error);
-            Bert.alert(error.reason, 'danger');
+            // Bert.alert(error.reason, 'danger');
           }
           if (result) {
             HipaaLogger.logEvent({eventType: "update", userId: Meteor.userId(), userName: Meteor.user().fullName(), collectionName: "Observations", recordId: context.state.observationId});
             Session.set('selectedObservationId', false);
             Session.set('observationPageTabIndex', 1);
-            Bert.alert('Observation added!', 'success');
+            // Bert.alert('Observation added!', 'success');
           }
         });
       } else {
@@ -177,13 +211,13 @@ export class ObservationsPage extends React.Component {
         Observations._collection.insert(fhirObservationData, function(error, result) {
           if (error) {
             if(process.env.NODE_ENV === "test")  console.log('Observations.insert[error]', error);
-            Bert.alert(error.reason, 'danger');
+            // Bert.alert(error.reason, 'danger');
           }
           if (result) {
             HipaaLogger.logEvent({eventType: "create", userId: Meteor.userId(), userName: Meteor.user().fullName(), collectionName: "Observations", recordId: context.state.observationId});
             Session.set('observationPageTabIndex', 1);
             Session.set('selectedObservationId', false);
-            Bert.alert('Observation added!', 'success');
+            // Bert.alert('Observation added!', 'success');
           }
         });
       }
@@ -238,31 +272,22 @@ export class ObservationsPage extends React.Component {
     Session.set('observationPageTabIndex', 1);
   }
   render() {
+    
+    let headerHeight = 64;
+    if(get(Meteor, 'settings.public.defaults.prominantHeader')){
+      headerHeight = 128;
+    }
+
     return (
       <div id="observationsPage">
-        <FullPageCanvas>
-          <GlassCard height='auto'>
-            <CardTitle
-              title="Observations"
-            />
-            <Tabs id="observationsPageTabs" default value={this.data.tabIndex} onChange={this.handleTabChange} initialSelectedIndex={1}>
-              <Tab className="newObservationTab" label='New' style={this.data.style.tab} onActive={ this.onNewTab } value={0} >
-                <ObservationDetail 
-                  id='newObservation' 
-                  displayDatePicker={true} 
-                  displayBarcodes={false}
-                  showHints={true}
-                  onInsert={ this.onInsert }
-                  observation={ this.data.selectedObservation }
-                  observationId={ this.data.selectedObservationId } 
-
-                  onDelete={ this.onDeleteObservation }
-                  onUpsert={ this.onUpsertObservation }
-                  onCancel={ this.onCancelUpsertObservation } 
-
-                  />
-              </Tab>
-              <Tab className="observationListTab" label='Observations' onActive={this.handleActive} style={this.data.style.tab} value={1}>
+        <StyledCard height="auto" scrollable={true} margin={20} headerHeight={headerHeight} >
+            <CardHeader title="Observations" />
+            <CardContent>
+              <Tabs id="allergyIntolerancesPageTabs" value={this.data.tabIndex} onChange={this.handleTabChange } aria-label="simple tabs example">
+                <Tab label="History" value={0} />
+                <Tab label="New" value={1} />
+              </Tabs>
+              <TabPanel >
                 <ObservationsTable 
                   displayBarcodes={false} 
                   multiline={false}
@@ -273,16 +298,16 @@ export class ObservationsPage extends React.Component {
                   hideValue={false}
                   noDataMessagePadding={100}
                   observations={ this.data.observations }
-                  paginationLimit={ this.data.pagnationLimit }
-                  appWidth={ Session.get('appWidth') }
+                  count={ this.data.observationsCount }
+                  rowsPerPage={20}
                   actionButtonLabel="Send"
                   onRowClick={ this.onTableRowClick }
                   onCellClick={ this.onTableCellClick }
                   onActionButtonClick={this.tableActionButtonClick}
                   onRemoveRecord={ this.onDeleteObservation }
                   />
-              </Tab>
-              <Tab className="observationDetailsTab" label='Detail' onActive={this.handleActive} style={this.data.style.tab} value={2}>
+              </TabPanel >
+              <TabPanel >
                 <ObservationDetail 
                   id='observationDetails' 
                   displayDatePicker={true} 
@@ -297,18 +322,14 @@ export class ObservationsPage extends React.Component {
                   onUpsert={ this.onUpsertObservation }
                   onCancel={ this.onCancelUpsertObservation } 
               />
-              </Tab>
-            </Tabs>
-
-          </GlassCard>
-        </FullPageCanvas>
+              </TabPanel >
+            </CardContent>            
+        </StyledCard>
       </div>
     );
   }
 }
 
 
-
 ReactMixin(ObservationsPage.prototype, ReactMeteorData);
-
 export default ObservationsPage;

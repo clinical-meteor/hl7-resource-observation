@@ -1,10 +1,13 @@
+
+import { StyledCard, PageCanvas, DynamicSpacer } from 'material-fhir-ui';
+
+
 import { Meteor } from 'meteor/meteor';
 import React  from 'react';
 import { ReactMeteorData } from 'meteor/react-meteor-data';
 import ReactMixin  from 'react-mixin';
 
 import { VitalMeasurements } from './VitalMeasurements';
-import { GlassCard, VerticalCanvas, DynamicSpacer } from 'meteor/clinical:glass-ui';
 
 import PropTypes from 'prop-types';
 
@@ -42,9 +45,9 @@ export class Healthlog extends React.Component {
   render() {
     return (
       <div id="weblogPage">
-        <VerticalCanvas>
+        <PageCanvas>
           { this.renderAuthenticatedUserControls(this.data.state.isLoggedIn) }
-        </VerticalCanvas>
+        </PageCanvas>
       </div>
     );
   }

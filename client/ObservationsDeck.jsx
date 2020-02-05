@@ -13,8 +13,6 @@
 // import { Session } from 'meteor/session';
 // import { Bert } from 'meteor/themeteorchef:bert';
 
-// import { GlassCard, VerticalCanvas, Glass, DynamicSpacer } from 'meteor/clinical:glass-ui';
-
 
 // export default class ObservationsDeck extends React.Component {
 //   getMeteorData() {
@@ -121,9 +119,9 @@
 //       _id: observation._id
 //     }, (error) => {
 //       if (error) {
-//         Bert.alert(error.reason, 'danger');
+//         // Bert.alert(error.reason, 'danger');
 //       } else {
-//         Bert.alert('Observation removed!', 'success');
+//         // Bert.alert('Observation removed!', 'success');
 //       }
 //     });
 //   }
